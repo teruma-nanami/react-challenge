@@ -9,3 +9,7 @@
 - 毎日何らかのサイト/アプリをデプロイ
 - デプロイは自分のサイトで行う
 - 学習コードは GitHub で公開
+
+## デプロイ先
+
+[https://react-challenge.nanami-teruma.com/](https://react-challenge.nanami-teruma.com/)
