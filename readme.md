@@ -13,3 +13,13 @@
 ## デプロイ先
 
 [https://react-challenge.nanami-teruma.com/](https://react-challenge.nanami-teruma.com/)
+
+## 運営サイト
+
+[ナナミノラボ](https://nanami-teruma.net/)
+[ナナミノコウボウ](https://nanami-teruma.com/)
+
+## Youtube チャンネル
+
+[ナナミノラボ](https://studio.youtube.com/channel/UCJxSYBcOy2IkvV0sFsAXFyQ)
+[ナナミノコウボウ](https://studio.youtube.com/channel/UCEpy035A-qyexVvnZXe1vTw)
