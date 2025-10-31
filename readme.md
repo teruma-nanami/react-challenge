@@ -12,7 +12,7 @@
 
 ## デプロイ先
 
-[https://react-challenge.nanami-teruma.com/](https://react-challenge.nanami-teruma.com/)
+[https://react-challenge.nanami-teruma.net/](https://react-challenge.nanami-teruma.net/)
 
 ## プロフィール
 
