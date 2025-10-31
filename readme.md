@@ -12,7 +12,7 @@
 
 ## デプロイ先
 
-[https://react-challenge.nanami-teruma.com/](https://react-challenge.nanami-teruma.com/){:target="\_blank"}
+[https://react-challenge.nanami-teruma.com/](https://react-challenge.nanami-teruma.com/)
 
 ## プロフィール
 
@@ -26,10 +26,10 @@
 
 ## 運営サイト
 
-[ナナミノラボ](https://nanami-teruma.net/){:target="\_blank"}  
-[ナナミノコウボウ](https://nanami-teruma.com/){:target="\_blank"}
+[ナナミノラボ](https://nanami-teruma.net/)  
+[ナナミノコウボウ](https://nanami-teruma.com/)
 
 ## Youtube チャンネル
 
-[ナナミノラボ](https://studio.youtube.com/channel/UCJxSYBcOy2IkvV0sFsAXFyQ){:target="\_blank"}  
-[ナナミノコウボウ](https://studio.youtube.com/channel/UCEpy035A-qyexVvnZXe1vTw){:target="\_blank"}
+[ナナミノラボ](https://studio.youtube.com/channel/UCJxSYBcOy2IkvV0sFsAXFyQ)  
+[ナナミノコウボウ](https://studio.youtube.com/channel/UCEpy035A-qyexVvnZXe1vTw)
