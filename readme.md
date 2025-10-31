@@ -34,5 +34,4 @@
 
 ## Youtube チャンネル
 
-[ナナミノラボ](https://studio.youtube.com/channel/UCJxSYBcOy2IkvV0sFsAXFyQ)  
-[ナナミノコウボウ](https://studio.youtube.com/channel/UCEpy035A-qyexVvnZXe1vTw)
+[ナナミノラボ](https://www.youtube.com/@nanami-no-lab)
