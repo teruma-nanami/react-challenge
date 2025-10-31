@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React Challenge</title>
+  </head>
+  <body>
+    <style>
+      /* 全体のスタイル */
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 20px;
+      }
+
+      /* h1のスタイル */
+      h1 {
+        text-align: center;
+        font-size: 3rem;
+        font-weight: 700;
+        margin: 0 0 40px 0;
+        background-clip: text;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        letter-spacing: 2px;
+        position: relative;
+      }
+
+      /* h2のスタイル */
+      h2 {
+        text-align: center;
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin: 40px auto;
+        padding: 15px 25px;
+        border-radius: 25px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        max-width: 300px;
+      }
+
+      h2::before {
+        content: "📅";
+        margin-right: 10px;
+        font-size: 30px;
+      }
+
+      .calendar {
+        border-collapse: collapse;
+        width: 100%;
+        max-width: 800px;
+        margin: 20px auto;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(10px);
+      }
+
+      .calendar th,
+      .calendar td {
+        border: 1px solid #ddd;
+        text-align: center;
+        padding: 15px 8px;
+        width: 14.28%;
+      }
+
+      .calendar th {
+        background-color: #f5f5f5;
+        font-weight: bold;
+      }
+
+      .calendar .sunday {
+        color: red;
+      }
+
+      .calendar .saturday {
+        color: blue;
+      }
+
+      .calendar .other-month {
+        color: #ccc;
+      }
+
+      .calendar .today {
+        background-color: #fffacd;
+        font-weight: bold;
+      }
+
+      .calendar .challenge-day {
+        background-color: #e6f3ff;
+      }
+
+      .calendar .challenge-day a {
+        color: #0066cc;
+        text-decoration: none;
+      }
+
+      .calendar .challenge-day a:hover {
+        text-decoration: underline;
+      }
+    </style>
+
+    <h1>React Challenge</h1>
+    <h2>2025年11月</h2>
+
+    <table class="calendar">
+      <thead>
+        <tr>
+          <th class="sunday">日</th>
+          <th>月</th>
+          <th>火</th>
+          <th>水</th>
+          <th>木</th>
+          <th>金</th>
+          <th class="saturday">土</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="sunday other-month">27</td>
+          <td class="other-month">28</td>
+          <td class="other-month">29</td>
+          <td class="other-month">30</td>
+          <td class="other-month">31</td>
+          <td class="challenge-day">
+            1<br /><a href="https://react-challengenanami-teruma.com/day1"
+              >day1</a
+            >
+          </td>
+          <td class="saturday challenge-day">
+            2<br /><a href="https://react-challengenanami-teruma.com/day2"
+              >day2</a
+            >
+          </td>
+        </tr>
+        <tr>
+          <td class="sunday challenge-day">
+            3<br /><a href="https://react-challengenanami-teruma.com/day3"
+              >day3</a
+            >
+          </td>
+          <td class="challenge-day">
+            4<br /><a href="https://react-challengenanami-teruma.com/day4"
+              >day4</a
+            >
+          </td>
+          <td class="challenge-day">
+            5<br /><a href="https://react-challengenanami-teruma.com/day5"
+              >day5</a
+            >
+          </td>
+          <td class="challenge-day">
+            6<br /><a href="https://react-challengenanami-teruma.com/day6"
+              >day6</a
+            >
+          </td>
+          <td class="challenge-day">
+            7<br /><a href="https://react-challengenanami-teruma.com/day7"
+              >day7</a
+            >
+          </td>
+          <td class="challenge-day">
+            8<br /><a href="https://react-challengenanami-teruma.com/day8"
+              >day8</a
+            >
+          </td>
+          <td class="saturday challenge-day">
+            9<br /><a href="https://react-challengenanami-teruma.com/day9"
+              >day9</a
+            >
+          </td>
+        </tr>
+        <tr>
+          <td class="sunday challenge-day">
+            10<br /><a href="https://react-challengenanami-teruma.com/day10"
+              >day10</a
+            >
+          </td>
+          <td class="challenge-day">
+            11<br /><a href="https://react-challengenanami-teruma.com/day11"
+              >day11</a
+            >
+          </td>
+          <td class="challenge-day">
+            12<br /><a href="https://react-challengenanami-teruma.com/day12"
+              >day12</a
+            >
+          </td>
+          <td class="challenge-day">
+            13<br /><a href="https://react-challengenanami-teruma.com/day13"
+              >day13</a
+            >
+          </td>
+          <td class="challenge-day">
+            14<br /><a href="https://react-challengenanami-teruma.com/day14"
+              >day14</a
+            >
+          </td>
+          <td class="challenge-day">
+            15<br /><a href="https://react-challengenanami-teruma.com/day15"
+              >day15</a
+            >
+          </td>
+          <td class="saturday challenge-day">
+            16<br /><a href="https://react-challengenanami-teruma.com/day16"
+              >day16</a
+            >
+          </td>
+        </tr>
+        <tr>
+          <td class="sunday challenge-day">
+            17<br /><a href="https://react-challengenanami-teruma.com/day17"
+              >day17</a
+            >
+          </td>
+          <td class="challenge-day">
+            18<br /><a href="https://react-challengenanami-teruma.com/day18"
+              >day18</a
+            >
+          </td>
+          <td class="challenge-day">
+            19<br /><a href="https://react-challengenanami-teruma.com/day19"
+              >day19</a
+            >
+          </td>
+          <td class="challenge-day">
+            20<br /><a href="https://react-challengenanami-teruma.com/day20"
+              >day20</a
+            >
+          </td>
+          <td class="challenge-day">
+            21<br /><a href="https://react-challengenanami-teruma.com/day21"
+              >day21</a
+            >
+          </td>
+          <td class="challenge-day">
+            22<br /><a href="https://react-challengenanami-teruma.com/day22"
+              >day22</a
+            >
+          </td>
+          <td class="saturday challenge-day">
+            23<br /><a href="https://react-challengenanami-teruma.com/day23"
+              >day23</a
+            >
+          </td>
+        </tr>
+        <tr>
+          <td class="sunday challenge-day">
+            24<br /><a href="https://react-challengenanami-teruma.com/day24"
+              >day24</a
+            >
+          </td>
+          <td class="challenge-day">
+            25<br /><a href="https://react-challengenanami-teruma.com/day25"
+              >day25</a
+            >
+          </td>
+          <td class="challenge-day">
+            26<br /><a href="https://react-challengenanami-teruma.com/day26"
+              >day26</a
+            >
+          </td>
+          <td class="challenge-day">
+            27<br /><a href="https://react-challengenanami-teruma.com/day27"
+              >day27</a
+            >
+          </td>
+          <td class="challenge-day">
+            28<br /><a href="https://react-challengenanami-teruma.com/day28"
+              >day28</a
+            >
+          </td>
+          <td class="challenge-day">
+            29<br /><a href="https://react-challengenanami-teruma.com/day29"
+              >day29</a
+            >
+          </td>
+          <td class="saturday challenge-day">
+            30<br /><a href="https://react-challengenanami-teruma.com/day30"
+              >day30</a
+            >
+          </td>
+        </tr>
+        <tr>
+          <td class="sunday other-month">1</td>
+          <td class="other-month">2</td>
+          <td class="other-month">3</td>
+          <td class="other-month">4</td>
+          <td class="other-month">5</td>
+          <td class="other-month">6</td>
+          <td class="saturday other-month">7</td>
+        </tr>
+      </tbody>
+    </table>
+    <style>
+      .calendar {
+        border-collapse: collapse;
+        width: 100%;
+        max-width: 800px;
+        margin: 20px auto;
+      }
+
+      .calendar th,
+      .calendar td {
+        border: 1px solid #ddd;
+        text-align: center;
+        padding: 15px 8px;
+        width: 14.28%;
+      }
+
+      .calendar th {
+        background-color: #f5f5f5;
+        font-weight: bold;
+      }
+
+      .calendar .sunday {
+        color: red;
+      }
+
+      .calendar .saturday {
+        color: blue;
+      }
+
+      .calendar .other-month {
+        color: #ccc;
+      }
+
+      .calendar .challenge-day {
+        background-color: #e6f3ff;
+      }
+
+      .calendar .challenge-day a {
+        color: #0066cc;
+        text-decoration: none;
+      }
+
+      .calendar .challenge-day a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </body>
+</html>
