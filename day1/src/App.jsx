@@ -4,6 +4,8 @@ function App() {
   return (
     <div>
       <h1>Hello World!</h1>
+      <h2>React Router</h2>
+      <Link to="/router">React Routerの解説ページへ</Link>
       <h2>ReactのuseState 10本ノック</h2>
       <Link to="/state">【useState】カウントアプリのページへ</Link>
       <br />
