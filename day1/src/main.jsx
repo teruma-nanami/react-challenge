@@ -15,7 +15,7 @@ import StateConditionalRenderDemo from "./StateConditionalRenderDemo.jsx";
 import StateHistoryDemo from "./StateHistoryDemo.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <BrowserRouter>
+  <BrowserRouter basename="/day1">
     <Routes>
       <Route path="/" element={<App />} />
       <Route path="/router" element={<ReactRouter />} />
