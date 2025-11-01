@@ -15,26 +15,23 @@ import StateConditionalRenderDemo from "./StateConditionalRenderDemo.jsx";
 import StateHistoryDemo from "./StateHistoryDemo.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <BrowserRouter basename="/react-challenge">
+  <BrowserRouter basename="react-challenge/day1">
     <Routes>
-      <Route path="/day1/" element={<App />} />
-      <Route path="/day1/router" element={<ReactRouter />} />
-      <Route path="/day1/state" element={<StateDemo />} />
-      <Route path="/day1/state-name" element={<StateNameDemo />} />
-      <Route path="/day1/state-toggle" element={<StateToggleDemo />} />
-      <Route path="/day1/state-todo" element={<StateTodoDemo />} />
-      <Route path="/day1/state-user" element={<StateUserDemo />} />
+      <Route path="/" element={<App />} />
+      <Route path="/router" element={<ReactRouter />} />
+      <Route path="/state" element={<StateDemo />} />
+      <Route path="/state-name" element={<StateNameDemo />} />
+      <Route path="/state-toggle" element={<StateToggleDemo />} />
+      <Route path="/state-todo" element={<StateTodoDemo />} />
+      <Route path="/state-user" element={<StateUserDemo />} />
+      <Route path="/state-styled-toggle" element={<StateStyledToggleDemo />} />
+      <Route path="/state-multi" element={<StateMultiDemo />} />
+      <Route path="/state-reset" element={<StateResetDemo />} />
       <Route
-        path="/day1/state-styled-toggle"
-        element={<StateStyledToggleDemo />}
-      />
-      <Route path="/day1/state-multi" element={<StateMultiDemo />} />
-      <Route path="/day1/state-reset" element={<StateResetDemo />} />
-      <Route
-        path="/day1/state-conditional"
+        path="/state-conditional"
         element={<StateConditionalRenderDemo />}
       />
-      <Route path="/day1/state-history" element={<StateHistoryDemo />} />
+      <Route path="/state-history" element={<StateHistoryDemo />} />
     </Routes>
   </BrowserRouter>
 );
