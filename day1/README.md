@@ -85,3 +85,27 @@
 - ToDo リストの応用として理解
 
 ---
+
+## React deploy
+
+デプロイで非常に苦労したので行ったこと一覧をまとめておく。
+解決に 2 時間かかった・・・。
+
+### 前提条件
+
+- 公開ディレクトリは react-challenge/day1
+- 実装したい URL は react-challenge.nanami-teruma.net/day1
+
+### 行ったこと
+
+- vite.config.js に `base: "/day1/"` を追加した (表示する URL に合わせる必要あり)
+- npm run build
+- dist フォルダが作成されるので、assets の中身を丸ごと day1 直下へ移動
+- 生成された index.html は day1 直下へ上書き
+- デプロイするも失敗
+- 原因は React Router で basename が必要
+- main.jsx に `<BrowserRouter basename="/day1">` を記述する
+- デプロイするも失敗
+- どうやらパスに関わる操作を行うたびに `npm run build`が必要だと把握
+- index.html を元に戻して（戻さないとエラー）`npm run build` を実行
+- デプロイして成功
