@@ -17,7 +17,7 @@ import StateHistoryDemo from "./StateHistoryDemo.jsx";
 ReactDOM.createRoot(document.getElementById("root")).render(
   <BrowserRouter basename="">
     <Routes>
-      <Route path="/day1" element={<App />} />
+      <Route path="/day1/" element={<App />} />
       <Route path="/day1/router" element={<ReactRouter />} />
       <Route path="/day1/state" element={<StateDemo />} />
       <Route path="/day1/state-name" element={<StateNameDemo />} />
