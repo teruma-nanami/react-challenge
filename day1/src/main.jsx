@@ -15,7 +15,7 @@ import StateConditionalRenderDemo from "./StateConditionalRenderDemo.jsx";
 import StateHistoryDemo from "./StateHistoryDemo.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <BrowserRouter basename="">
+  <BrowserRouter basename="/react-challenge">
     <Routes>
       <Route path="/day1/" element={<App />} />
       <Route path="/day1/router" element={<ReactRouter />} />
