@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ChildArea } from "./components/ChildArea";
 import "./App.css";
 
@@ -10,6 +10,9 @@ function App() {
   const onClickOpen = () => {
     setOpen(!open);
   };
+  const onClickClose = useCallback(() => {
+    setOpen(false);
+  }, []);
 
   const onClickAdd = () => {
     setCount(count + 1);
@@ -27,7 +30,6 @@ function App() {
         setOpen(false);
       }
     }
-    console.log("カウントが更新されました");
   }, [count]);
 
   return (
@@ -40,7 +42,7 @@ function App() {
       <br />
       <br />
       <button onClick={onClickOpen}>表示</button>
-      <ChildArea open={open} />
+      <ChildArea open={open} onClickClose={onClickClose} />
     </>
   );
 }
