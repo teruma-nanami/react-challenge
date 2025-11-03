@@ -1,11 +1,13 @@
+import { memo } from "react";
+
 const style = {
   width: "100%",
   height: "200px",
   backgroundColor: "khaki",
 };
 
-export const ChildArea = (props) => {
-  const { open } = props;
+export const ChildArea = memo((props) => {
+  const { open, onClickClose } = props;
   // const data = [...Array(2000).keys()]; // 0から1999までの配列
   // data.forEach(() => {
   //   console.log("レンダリングされました");
@@ -16,5 +18,14 @@ export const ChildArea = (props) => {
     console.log("useEffectの練習");
   });
 
-  return <>{open ? <div style={style}>子コンポーネント</div> : null}</>;
-};
+  return (
+    <>
+      {open ? (
+        <div style={style}>
+          <p>子コンポーネント</p>
+          <button onClick={onClickClose}>閉じる</button>
+        </div>
+      ) : null}
+    </>
+  );
+});

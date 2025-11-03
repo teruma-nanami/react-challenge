@@ -1,16 +1,62 @@
-# React + Vite
+# Day3: 学習内容
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## useEffect について
 
-Currently, two official plugins are available:
+- useEffect の基本的な使い方
+- useEffect はバグを回避するために使用する関数
+- useEffect の第二引数に依存配列を渡すことで、特定の状態やプロパティの変更時にのみ副作用を実行できる
+- できる限り使用しないように設計を行うことが望ましい
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## React.memo について
 
-## React Compiler
+- React.memo はコンポーネントのパフォーマンス最適化のために使用される高階コンポーネント
+- 特定のコンポーネントについて丸ごと再レンダリングするのを防ぐために使用される
+- React.memo はコンポーネントの props が変更されない限り、再レンダリングを防ぐ
+- React.memo はコンポーネントのレンダリングコストが高い場合に特に有効
+- ユーザーの体験向上につながるため、必要な箇所では積極的に使用することが推奨される
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## useCallback について
 
-## Expanding the ESLint configuration
+- useCallback は関数のメモ化に使用される React フック
+- 特定の関数について丸ごと再レンダリングするのを防ぐために使用される
+- useCallback は関数コンポーネント内で定義された関数をメモ化し、依存配列に基づいて再生成を制御する
+- useCallback は子コンポーネントに関数を渡す際に、不要な再レンダリングを防ぐために使用される
+- useCallback はパフォーマンス最適化のために使用されるが、、過度に使用するとコードが複雑になる可能性があるため注意が必要
+- ユーザーの体験向上につながるため、必要な箇所では積極的に使用することが推奨される
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## useMemo について
+
+- useMemo は値のメモ化に使用される React フック
+- 特定の変数や値について丸ごと再レンダリングするのを防ぐために使用される
+- useMemo は計算コストの高い関数の結果をメモ化し、依存配列に基づいて再計算を制御する
+- useMemo はパフォーマンス最適化のために使用されるが、過度に使用するとコードが複雑になる可能性があるため注意が必要
+- useMemo は特に大規模なデータセットや複雑な計算を扱う場合に有効
+- ユーザーの体験向上につながるが、あまり使用する機会がない
+
+## CSS-in-JS について
+
+- CSS-in-JS は JavaScript 内で CSS を記述する手法
+
+### Inline Style
+
+- コンポーネントの style 属性に直接スタイルオブジェクトを渡す方法
+- スタイルがコンポーネントに密接に関連している場合に便利
+- 動的なスタイル変更が容易
+
+### CSS Modules
+
+- CSS ファイルをモジュールとしてインポートし、クラス名の衝突を防ぐ方法
+- コンポーネントごとにスタイルを分離でき、保守性が向上
+- ローカルスコープのクラス名を自動生成するため、グローバルなスタイルの影響を受けにくい
+
+### Styled JSX
+
+- Next.js に組み込まれている CSS-in-JS ソリューション
+- コンポーネント内でスタイルを定義でき、スコープがコンポーネントに限定される
+- 動的なスタイル変更が容易で、JavaScript の変数を使用してスタイルを制御できる
+
+### Styled Components
+
+- styled-components ライブラリを使用して、スタイル付きのコンポーネントを作成する方法
+- コンポーネントごとにスタイルを分離でき、再利用性が高い
+- テーマの管理やスタイルの継承が容易

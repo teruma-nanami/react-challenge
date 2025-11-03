@@ -1,46 +1,27 @@
-import { useEffect, useState } from "react";
-import { ChildArea } from "./components/ChildArea";
+import React from "react";
 import "./App.css";
+import { Link } from "react-router-dom";
 
 function App() {
-  const [count, setCount] = useState(0);
-  const [text, setText] = useState("");
-  const [open, setOpen] = useState(false);
-
-  const onClickOpen = () => {
-    setOpen(!open);
-  };
-
-  const onClickAdd = () => {
-    setCount(count + 1);
-  };
-
-  const onChangeInput = (e) => {
-    setText(e.target.value);
-  };
-
-  useEffect(() => {
-    if (count > 0) {
-      if (count % 3 === 0) {
-        setOpen(true);
-      } else {
-        setOpen(false);
-      }
-    }
-    console.log("カウントが更新されました");
-  }, [count]);
-
   return (
     <>
-      <p>カウント: {count}</p>
-      <button onClick={onClickAdd}>カウントアップ</button>
-      <br />
-      <br />
-      <input type="text" value={text} onChange={onChangeInput} />
-      <br />
-      <br />
-      <button onClick={onClickOpen}>表示</button>
-      <ChildArea open={open} />
+      <h1>Reactアプリケーション</h1>
+      <p>このアプリケーションは、Reactの基本を学ぶためのものです。</p>
+      <p>
+        <Link to="/rendering">レンダリングの教材へ</Link>
+      </p>
+      <p>
+        <Link to="/inline-style">CSSの教材へ</Link>
+      </p>
+      <p>
+        <Link to="/css-modules">CSSモジュールの教材へ</Link>
+      </p>
+      <p>
+        <Link to="/styled-jsx">Styled JSXの教材へ</Link>
+      </p>
+      <p>
+        <Link to="/styled-components">Styled Componentsの教材へ</Link>
+      </p>
     </>
   );
 }
