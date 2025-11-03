@@ -11,7 +11,7 @@ import { StyledComponents } from "./components/StyledComponents.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename="/day3">
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/rendering" element={<Rendering />} />
