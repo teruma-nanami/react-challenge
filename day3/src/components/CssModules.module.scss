@@ -1,0 +1,21 @@
+.container {
+  border: 2px solid #ccc;
+  padding: 16px;
+  margin: 16px;
+  background-color: #f4f400;
+}
+.title {
+  font-size: 24px;
+  color: #333;
+}
+.button {
+  padding: 8px 16px;
+  background-color: #eeaeee;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.button:hover {
+  background-color: #cc88cc;
+}
