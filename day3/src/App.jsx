@@ -1,6 +1,7 @@
 import React from "react";
 import "./App.css";
 import { Link } from "react-router-dom";
+import { BaseButton } from "./components/BaseButton";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
       <p>
         <Link to="/styled-components">Styled Componentsの教材へ</Link>
       </p>
+      <BaseButton color="primary">Primary Button</BaseButton>
     </>
   );
 }
