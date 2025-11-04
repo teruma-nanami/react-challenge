@@ -1,4 +1,6 @@
 import styled from "styled-components";
+import { useContext } from "react";
+import { UserContext } from "../../providers/UserProvider";
 
 const StyledUserIcon = styled.div`
   text-align: center;
@@ -18,6 +20,8 @@ const StyledUserName = styled.span`
 `;
 export const UserIconWithName = (props) => {
   const { user } = props;
+  const context = useContext(UserContext);
+  console.log(context);
   return (
     <StyledUserIcon>
       <StyledUserImage
