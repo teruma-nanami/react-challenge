@@ -29,11 +29,12 @@ const StyledCard = styled.div`
 `;
 
 export const UserCard = (props) => {
-  const { user } = props;
+  const { user, isAdmin } = props;
+  console.log("UserCard rendered");
 
   return (
     <StyledCard>
-      <UserIconWithName user={user} />
+      <UserIconWithName user={user} isAdmin={isAdmin} />
       <StyledDl>
         <StyledDt>Email:</StyledDt>
         <StyledDd>{user.email}</StyledDd>

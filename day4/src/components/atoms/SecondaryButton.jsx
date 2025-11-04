@@ -10,6 +10,6 @@ const StyledButton = styled(BaseButton)`
 `;
 
 export const SecondaryButton = (props) => {
-  const { children } = props;
-  return <StyledButton>{children}</StyledButton>;
+  const { children, onClick } = props;
+  return <StyledButton onClick={onClick}>{children}</StyledButton>;
 };

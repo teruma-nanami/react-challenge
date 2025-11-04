@@ -1,16 +1,16 @@
-# React + Vite
+# Day4 学習記録
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Atomic design
 
-Currently, two official plugins are available:
+- atomic design に即しながら実際にアプリを制作した
+- 教材が ReactRouter v5 だったので、v6 を使っている点に苦労した
+- ReactRouter が二重で入るバグが発生し、解消したのに治らない  
+  結局はキャッシュのせいで治らないことが判明した
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Context について
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- Context の基本的な使い方を学んだ
+- ここでも React Router のバージョン差に苦労し、結局しっかりと理解することが出来なかった
+- ただし、グローバルな state 管理については理解できたと考えている
+- Redux などのライブラリを使わずにグローバルな state 管理が出来る点は非常に魅力的だと感じた
+- ここは Next.js を学習した際に再度もどって学習する必要がある

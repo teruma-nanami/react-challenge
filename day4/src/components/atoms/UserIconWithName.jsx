@@ -20,8 +20,8 @@ const StyledUserName = styled.span`
 `;
 export const UserIconWithName = (props) => {
   const { user } = props;
-  const context = useContext(UserContext);
-  console.log(context);
+  const { userInfo } = useContext(UserContext);
+  const isAdmin = userInfo?.isAdmin || false;
   return (
     <StyledUserIcon>
       <StyledUserImage
@@ -31,6 +31,7 @@ export const UserIconWithName = (props) => {
         height={160}
       />
       <StyledUserName>{user.name}</StyledUserName>
+      {isAdmin && <span>編集</span>}
     </StyledUserIcon>
   );
 };
