@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
-import { Top } from "../components/pages/Top.jsx";
-import { User } from "../components/pages/User.jsx";
+import { Top } from "../components/pages/Top";
+import { User } from "../components/pages/User";
 
 export const AppRouter = () => {
   return (

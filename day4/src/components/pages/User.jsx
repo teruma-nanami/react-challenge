@@ -1,8 +1,10 @@
-import App from "../../App";
 import styled from "styled-components";
-import { SearchInput } from "../atoms/SearchInput";
 import { CardArea } from "../template/CardArea";
+import { useLocation } from "react-router-dom";
 import { SecondaryButton } from "../atoms/SecondaryButton";
+import { useContext } from "react";
+import { UserContext } from "../../providers/UserProvider";
+import { SearchInput } from "../atoms/SearchInput";
 
 const Container = styled.div`
   padding: 20px;
@@ -13,15 +15,21 @@ const Container = styled.div`
 `;
 
 export const User = () => {
+  const { userInfo, setUserInfo } = useContext(UserContext);
+  const onClickToggle = () => {
+    setUserInfo({ isAdmin: !userInfo?.isAdmin });
+  };
+
+  const { state } = useLocation();
+  const isAdmin = state?.isAdmin || false;
   return (
-    <App>
+    <>
       <Container>
         <h1>User Page</h1>
         <SearchInput />
-        <SecondaryButton>管理者ユーザー</SecondaryButton>
-        <SecondaryButton>一般ユーザー</SecondaryButton>
+        <SecondaryButton onClick={onClickToggle}>きりかえ</SecondaryButton>
+        <CardArea isAdmin={isAdmin} />
       </Container>
-      <CardArea />
-    </App>
+    </>
   );
 };
