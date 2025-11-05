@@ -1,67 +1,32 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
+import { HamburgerButton } from "../ui/HamburgerButton";
 
 // Small util to join class names
 const cx = (...v: Array<string | false | null | undefined>) => v.filter(Boolean).join(" ");
 
+// メニュー定義（常時表示。ログイン機構は撤去済みのため簡略化）
 const NAV_ITEMS = [
   { to: "/", label: "Home" },
-  { to: "/login", label: "Login" },
   { to: "/user-management", label: "User Management" },
+  { to: "/login", label: "Login" },
 ] as const;
 
-const linkBase = "px-3 py-2 text-sm font-medium rounded-lg transition-colors";
-const linkInactive =
-  "text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-white/10";
-const linkActive =
-  "text-indigo-700 bg-indigo-50 ring-1 ring-inset ring-indigo-200 dark:text-white dark:bg-indigo-600/30 dark:ring-indigo-400/30";
+// Component classes are defined in src/index.css via @layer components
 
 function LinkItem({ to, label }: { to: string; label: string }) {
   return (
-    <NavLink
-      to={to}
-      className={({ isActive }) => cx(linkBase, isActive ? linkActive : linkInactive)}
-    >
+    <NavLink to={to} className={({ isActive }) => cx("nav-link", isActive && "is-active")}>
       {label}
     </NavLink>
   );
 }
 
-function HamburgerButton({ open, onClick }: { open: boolean; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-      aria-controls="mobile-menu"
-      aria-expanded={open}
-      onClick={onClick}
-    >
-      <span className="sr-only">Open main menu</span>
-      <span aria-hidden="true" className="relative block h-4 w-6">
-        <span
-          className={cx(
-            "absolute left-0 h-0.5 w-6 rounded bg-current transition-all duration-200 ease-in-out",
-            open ? "top-1/2 -translate-y-1/2 rotate-45" : "top-0",
-          )}
-        />
-        <span
-          className={cx(
-            "absolute left-0 h-0.5 w-6 rounded bg-current transition-all duration-200 ease-in-out",
-            open ? "top-1/2 -translate-y-1/2 opacity-0" : "top-1/2 -translate-y-1/2 opacity-100",
-          )}
-        />
-        <span
-          className={cx(
-            "absolute left-0 h-0.5 w-6 rounded bg-current transition-all duration-200 ease-in-out",
-            open ? "top-1/2 -translate-y-1/2 -rotate-45" : "bottom-0",
-          )}
-        />
-      </span>
-    </button>
-  );
-}
+// HamburgerButton moved to components/ui/HamburgerButton
 
-function MobileMenu({ open }: { open: boolean }) {
+type NavItem = { to: string; label: string };
+
+function MobileMenu({ open, items }: { open: boolean; items: readonly NavItem[] }) {
   return (
     <div
       id="mobile-menu"
@@ -71,7 +36,7 @@ function MobileMenu({ open }: { open: boolean }) {
       )}
     >
       <div className="mx-auto max-w-6xl px-4 pb-4 flex flex-col gap-2">
-        {NAV_ITEMS.map((it) => (
+        {items.map((it) => (
           <LinkItem key={it.to} to={it.to} label={it.label} />
         ))}
       </div>
@@ -113,7 +78,7 @@ export function Header() {
       </nav>
 
       {/* Mobile menu panel */}
-      <MobileMenu open={open} />
+      <MobileMenu open={open} items={NAV_ITEMS} />
     </header>
   );
 }

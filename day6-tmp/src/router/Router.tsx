@@ -8,8 +8,8 @@ export function AppRouter() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
       <Route path="/user-management" element={<UserManagement />} />
+      <Route path="/login" element={<Login />} />
       <Route path="*" element={<Page404 />} />
 
     </Routes>
