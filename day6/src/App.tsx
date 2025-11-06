@@ -1,14 +1,18 @@
-import { Button } from "@chakra-ui/react";
+import { Button,Box } from "@chakra-ui/react";
+import { AppRouter } from "./Router/AppRouter";
+import { Header } from "./components/Organism/Header";
 import "./App.css";
 
 function App() {
 
   return (
     <>
-      <div style={{ padding: "2rem" }}>
+      <Header />
+      <Box p="2rem">
         <Button colorScheme="teal">Hello Chakra</Button>
         <p>This is a simple Chakra UI button.</p>
-      </div>
+      </Box>
+      <AppRouter />
     </>
   );
 }
