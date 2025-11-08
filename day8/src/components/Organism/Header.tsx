@@ -50,6 +50,9 @@ export const Header = memo(() => {
             <Box as="li">
               <Link to="/settings">Settings</Link>
             </Box>
+            <Box as="li">
+              <Link to="/login">Login</Link>
+            </Box>
           </Flex>
           <MenuIconButton onOpen={onOpen} />
         </Flex>

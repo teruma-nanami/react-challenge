@@ -1,29 +1,28 @@
 import { Box, Image, Stack, Text } from "@chakra-ui/react";
 import { memo } from "react";
 
-type User = {
+type Props = {
+  id: number;
   name: string;
   username: string;
   profileImage: string;
+  onClick?: (id: number) => void;
 };
 
-type Props = {
-  user: User;
-};
-
-export const UserCard = memo(({ user }: Props) => {
+export const UserCard = memo((Proos: Props) => {
+  const { id, name, username, profileImage, onClick } = Proos;
   return (
-    <Box p={5} shadow="md" borderWidth="1px" w="260px" h="260px">
+    <Box p={5} shadow="md" borderWidth="1px" w="260px" h="260px" onClick={() => onClick?.(id)}>
       <Stack>
         <Image
-          src={user.profileImage}
+          src={profileImage}
           borderRadius="full"
           boxSize="150px"
           mx="auto"
           alt="プロフィール画像"
         />
-        <Text align="center">{user.name}</Text>
-        <Text align="center">{user.username}</Text>
+        <Text align="center">{name}</Text>
+        <Text align="center">{username}</Text>
       </Stack>
     </Box>
   );
