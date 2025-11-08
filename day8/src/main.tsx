@@ -9,7 +9,7 @@ import App from "./App.tsx";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ChakraProvider theme={theme}>
-      <BrowserRouter>
+      <BrowserRouter basename="/day8">
         <App />
       </BrowserRouter>
     </ChakraProvider>
