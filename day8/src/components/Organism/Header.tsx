@@ -1,19 +1,19 @@
 import { Link } from "react-router-dom";
-import { memo } from "react";
-import { Box, Flex, Heading, IconButton } from "@chakra-ui/react";
+import { memo, useCallback } from "react";
+import { Box, Flex, Heading } from "@chakra-ui/react";
 import { useDisclosure } from "@chakra-ui/react";
-import {
-  Drawer,
-  DrawerOverlay,
-  DrawerContent,
-  DrawerBody,
-  Button,
-} from "@chakra-ui/react";
-import { MenuIconButton } from "./Atoms/MenuIconButton";
+import { MenuDrawer } from "../Organism/MenuDrawer";
+import { MenuIconButton } from "../Atoms/MenuIconButton";
+import { useNavigate } from "react-router-dom";
 
 export const Header = memo(() => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const navigate = useNavigate();
 
+  const onClickHome = useCallback(() => { navigate("/") }, [navigate])
+  const onClickLogin = useCallback(() => { navigate("/login") }, [navigate])
+  const onClickUserManagement = useCallback(() => { navigate("/user-management") }, [navigate])
+  const onClickSettings = useCallback(() => { navigate("/settings") }, [navigate])
   return (
     <>
       <Flex
@@ -30,7 +30,7 @@ export const Header = memo(() => {
           width="100%"
           justifyContent="space-between"
         >
-          <Heading as="h1" size="lg">
+          <Heading as="h1" size="lg" onClick={onClickHome} cursor="pointer">
             My Application
           </Heading>
           <Flex
@@ -54,20 +54,10 @@ export const Header = memo(() => {
               <Link to="/settings">Settings</Link>
             </Box>
           </Flex>
-          <MenuIconButton> onOpen={onOpen} />
+          <MenuIconButton onOpen={onOpen} />
         </Flex>
       </Flex>
-      <Drawer placement="left" size="xs" isOpen={isOpen} onClose={onClose}>
-        <DrawerOverlay>
-          <DrawerContent>
-            <DrawerBody paddingTop="40px" alignItems="center" gap="20px">
-              <Button w="100%">TOP</Button>
-              <Button w="100%">Login</Button>
-              <Button w="100%">User Management</Button>
-            </DrawerBody>
-          </DrawerContent>
-        </DrawerOverlay>
-      </Drawer>
+      <MenuDrawer isOpen={isOpen} onClose={onClose} onClickHome={onClickHome}  onClickUserManagement={onClickUserManagement} onClickSettings={onClickSettings} onClickLogin={onClickLogin}/>
     </>
   );
 });
