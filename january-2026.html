@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React Challenge - 2026年1月</title>
+  </head>
+  <body>
+    <h1>React Challenge</h1>
+    <h2>2026年1月</h2>
+    <div class="month-nav">
+      <a class="prev" href="./december-2025.html" aria-label="前月へ">◀ 12月</a>
+      <span class="spacer"></span>
+      <span class="next placeholder" aria-hidden="true">(次月準備中)</span>
+    </div>
+    <h3>今月の目標:ReactとLaravelを使ったログイン機能のあるお問い合わせアプリを完成させる</h3>
+
+    <table class="calendar">
+      <thead>
+        <tr>
+          <th class="sunday">日</th>
+          <th>月</th>
+          <th>火</th>
+          <th>水</th>
+          <th>木</th>
+          <th>金</th>
+          <th class="saturday">土</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- 2026年1月は木曜日開始 (2026-01-01 is Thursday) -->
+        <tr>
+          <td class="sunday other-month">28</td>
+          <td class="other-month">29</td>
+          <td class="other-month">30</td>
+          <td class="other-month">31</td>
+          <td class="challenge-day">1<br /><a href="https://react-challenge.nanami-teruma.net/day62">day62</a></td>
+          <td class="challenge-day">2<br /><a href="https://react-challenge.nanami-teruma.net/day63">day63</a></td>
+          <td class="saturday challenge-day">3<br /><a href="https://react-challenge.nanami-teruma.net/day64">day64</a></td>
+        </tr>
+        <tr>
+          <td class="sunday challenge-day">4<br /><a href="https://react-challenge.nanami-teruma.net/day65">day65</a></td>
+          <td class="challenge-day">5<br /><a href="https://react-challenge.nanami-teruma.net/day66">day66</a></td>
+          <td class="challenge-day">6<br /><a href="https://react-challenge.nanami-teruma.net/day67">day67</a></td>
+          <td class="challenge-day">7<br /><a href="https://react-challenge.nanami-teruma.net/day68">day68</a></td>
+          <td class="challenge-day">8<br /><a href="https://react-challenge.nanami-teruma.net/day69">day69</a></td>
+          <td class="challenge-day">9<br /><a href="https://react-challenge.nanami-teruma.net/day70">day70</a></td>
+          <td class="saturday challenge-day">10<br /><a href="https://react-challenge.nanami-teruma.net/day71">day71</a></td>
+        </tr>
+        <tr>
+          <td class="sunday challenge-day">11<br /><a href="https://react-challenge.nanami-teruma.net/day72">day72</a></td>
+          <td class="challenge-day">12<br /><a href="https://react-challenge.nanami-teruma.net/day73">day73</a></td>
+          <td class="challenge-day">13<br /><a href="https://react-challenge.nanami-teruma.net/day74">day74</a></td>
+          <td class="challenge-day">14<br /><a href="https://react-challenge.nanami-teruma.net/day75">day75</a></td>
+          <td class="challenge-day">15<br /><a href="https://react-challenge.nanami-teruma.net/day76">day76</a></td>
+          <td class="challenge-day">16<br /><a href="https://react-challenge.nanami-teruma.net/day77">day77</a></td>
+          <td class="saturday challenge-day">17<br /><a href="https://react-challenge.nanami-teruma.net/day78">day78</a></td>
+        </tr>
+        <tr>
+          <td class="sunday challenge-day">18<br /><a href="https://react-challenge.nanami-teruma.net/day79">day79</a></td>
+          <td class="challenge-day">19<br /><a href="https://react-challenge.nanami-teruma.net/day80">day80</a></td>
+          <td class="challenge-day">20<br /><a href="https://react-challenge.nanami-teruma.net/day81">day81</a></td>
+          <td class="challenge-day">21<br /><a href="https://react-challenge.nanami-teruma.net/day82">day82</a></td>
+          <td class="challenge-day">22<br /><a href="https://react-challenge.nanami-teruma.net/day83">day83</a></td>
+          <td class="challenge-day">23<br /><a href="https://react-challenge.nanami-teruma.net/day84">day84</a></td>
+          <td class="saturday challenge-day">24<br /><a href="https://react-challenge.nanami-teruma.net/day85">day85</a></td>
+        </tr>
+        <tr>
+          <td class="sunday challenge-day">25<br /><a href="https://react-challenge.nanami-teruma.net/day86">day86</a></td>
+          <td class="challenge-day">26<br /><a href="https://react-challenge.nanami-teruma.net/day87">day87</a></td>
+          <td class="challenge-day">27<br /><a href="https://react-challenge.nanami-teruma.net/day88">day88</a></td>
+          <td class="challenge-day">28<br /><a href="https://react-challenge.nanami-teruma.net/day89">day89</a></td>
+          <td class="challenge-day">29<br /><a href="https://react-challenge.nanami-teruma.net/day90">day90</a></td>
+          <td class="challenge-day">30<br /><a href="https://react-challenge.nanami-teruma.net/day91">day91</a></td>
+          <td class="saturday challenge-day">31<br /><a href="https://react-challenge.nanami-teruma.net/day92">day92</a></td>
+        </tr>
+        <tr>
+          <td class="sunday other-month">1</td>
+          <td class="other-month">2</td>
+          <td class="other-month">3</td>
+          <td class="other-month">4</td>
+          <td class="other-month">5</td>
+          <td class="other-month">6</td>
+          <td class="saturday other-month">7</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <style>
+      /* 月移動ナビ */
+      .month-nav {
+        max-width: 800px;
+        margin: 0 auto 10px;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+      .month-nav .spacer { flex: 1; }
+      .month-nav a, .month-nav span.next {
+        color: #0066cc;
+        text-decoration: none;
+        font-weight: 600;
+      }
+      .month-nav a:hover { text-decoration: underline; }
+      .month-nav .placeholder { opacity: 0.5; font-style: italic; }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 20px;
+      }
+      h1 { text-align: center; font-size: 3rem; font-weight: 700; margin: 0 0 40px; }
+      h2 { text-align: center; font-size: 1.8rem; font-weight: 600; margin: 40px auto; }
+      h3 { text-align: center; font-size: 1.2rem; font-weight: 500; margin: 20px auto 40px; max-width: 600px; color: #555; }
+
+      .calendar { border-collapse: collapse; width: 100%; max-width: 800px; margin: 20px auto; }
+      .calendar th, .calendar td { border: 1px solid #ddd; text-align: center; padding: 15px 8px; width: 14.28%; }
+      .calendar th { background-color: #f5f5f5; font-weight: bold; }
+      .calendar .sunday { color: red; }
+      .calendar .saturday { color: blue; }
+      .calendar .other-month { color: #ccc; }
+      .calendar .challenge-day { background-color: #e6f3ff; }
+      .calendar .challenge-day a { color: #0066cc; text-decoration: none; }
+      .calendar .challenge-day a:hover { text-decoration: underline; }
+    </style>
+  </body>
+</html>
