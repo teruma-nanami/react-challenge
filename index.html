@@ -11,7 +11,11 @@
     <div class="month-nav">
       <a class="next" href="./december-2025.html" aria-label="翌月へ">12月 ▶</a>
     </div>
-    <h3>今月の目標:ReactとLaravelを使ったログイン機能のあるお問い合わせアプリを作る</h3>
+    <!-- 月間目標: 定義リストで2行に分割 -->
+    <dl class="goal">
+      <dt>今月の目標:</dt>
+      <dd>ReactとLaravelを使ったログイン機能のあるお問い合わせアプリを完成させる</dd>
+    </dl>
 
     <table class="calendar">
       <thead>
@@ -257,14 +261,37 @@
         font-size: 30px;
       }
 
-      /* h3のスタイル */
-      h3 {
-        text-align: center;
-        font-size: 1.2rem;
-        font-weight: 500;
-        margin: 20px auto 40px auto;
-        max-width: 600px;
+
+      /* 月間目標（左右2カラム: 左=ラベル, 右=内容） */
+      .goal {
+        margin: 40px auto 40px;
+        max-width: 720px;
+        padding: 0 16px;
+        font-size: 1.05rem;
+        display: grid;
+        grid-template-columns: 95px 1fr;
+        column-gap: 8px;
+        row-gap: 8px;
+        align-items: baseline;
+      }
+      .goal dt {
+        font-weight: 700;
+        color: #333;
+        letter-spacing: .5px;
+        margin: 0; /* 横並び用に余白リセット */
+        text-align: left;
+      }
+      .goal dd {
+        margin: 0; /* 横並び用に余白リセット */
+        line-height: 1.7;
         color: #555;
+        font-weight: 500;
+        text-align: left;
+      }
+      @media (max-width: 520px) {
+        .goal {
+          grid-template-columns: 120px 1fr;
+        }
       }
       .calendar {
         border-collapse: collapse;
