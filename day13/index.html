@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>day13</title>
+
+  </head>
+  <body>
+    <div class="container">
+      <header class="page-head">
+        <h1>day11</h1>
+        <h2 class="lead">本日の学習内容</h2>
+      </header>
+
+      <ul class="topics">
+        <li>React作成記事の整理</li>
+        <li>Udemy教材</li>
+        <li>React(v18)完全入門ガイド｜Hooks、Next14、Redux、TypeScript</li>
+        <li>Reduxについて</li>
+        <li>Reduxの構文化</li>
+        <li>Redux Thunkについて</li>
+        <li>Next.jsについて</li>
+        <li>App Router</li>
+        <li>SSRとSSGについて</li>
+      </ul>
+    </div>
+  </body>
+      <style>
+      :root {
+        --bg: #f6f8ff;
+        --bg2: #eef2ff;
+        --card: #ffffff;
+        --text: #0f172a; /* slate-900 */
+        --muted: #475569; /* slate-600 */
+        --border: #e2e8f0; /* slate-200 */
+        --row: #f8fafc; /* slate-50 */
+        --accent: #4f46e5; /* indigo-600 */
+      }
+
+      html, body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Ubuntu,
+          Cantarell, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        color: var(--text);
+        background: linear-gradient(135deg, var(--bg) 0%, var(--bg2) 100%);
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 32px 24px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
+      }
+
+      header.page-head {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 2.4rem;
+        letter-spacing: 0.5px;
+      }
+      .lead {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      ul.topics {
+        list-style: none;
+        padding: 0;
+        margin: 22px 0 0;
+        display: grid;
+        gap: 12px;
+      }
+      .topics li {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        background: var(--row);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        transition: transform 120ms ease, box-shadow 120ms ease;
+      }
+      .topics li:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+      }
+      .topics li::before {
+        content: "♯";
+        font-size: 1.1rem;
+      }
+      @media (max-width: 520px) {
+        .container { margin: 20px auto; padding: 20px 16px; }
+        h1 { font-size: 2rem; }
+      }
+    </style>
+</html>
