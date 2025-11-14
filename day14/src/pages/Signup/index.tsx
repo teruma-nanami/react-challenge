@@ -1,19 +1,21 @@
-import { Link } from "react-router-dom";
-import "./auth.css";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { authRepository } from "../../modules/auth/auth.repository";
+import { useCurrentUserStore } from "../../modules/auth/current-user.state";
+import "./auth.css";
 
 function Signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { setCurrentUser } = useCurrentUserStore();
 
   const signup = async () => {
     // サインアップ処理をここに実装
     if (name === "" || email === "" || password === "") return;
     const { user, token } = await authRepository.signup(name, email, password);
-
-    console.log("Signup successful:", user, token);
+    localStorage.setItem("token", token);
+    setCurrentUser(user);
   };
 
   return (

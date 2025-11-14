@@ -1,19 +1,23 @@
-import { Link } from "react-router-dom";
-import "../Signup/auth.css";
 import { useState } from "react";
+import { Link, Navigate } from "react-router-dom";
 import { authRepository } from "../../modules/auth/auth.repository";
+import { useCurrentUserStore } from "../../modules/auth/current-user.state";
+import "../Signup/auth.css";
 
 function Signin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { currentUser, setCurrentUser } = useCurrentUserStore();
 
   const signin = async () => {
     // サインイン処理をここに実装
     if (email === "" || password === "") return;
     const { user, token } = await authRepository.signin(email, password);
-    console.log("Signin successful:", user, token);
+    setCurrentUser(user);
+    localStorage.setItem("token", token);
   };
 
+  if (currentUser != null) return <Navigate to="/" />;
   return (
     <div className="signup-container">
       <div className="signup-form-container">
