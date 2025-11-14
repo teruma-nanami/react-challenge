@@ -17,6 +17,10 @@ function Signin() {
     localStorage.setItem("token", token);
   };
 
+  if (currentUser === undefined) {
+    return null; // 初期化中は何も表示しない
+  }
+
   if (currentUser != null) return <Navigate to="/" />;
   return (
     <div className="signup-container">
