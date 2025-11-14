@@ -1,0 +1,132 @@
+.signup-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #4a154b;
+  padding: 20px;
+}
+
+.signup-form-container {
+  background-color: white;
+  border-radius: 8px;
+  padding: 32px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.signup-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1d1c1d;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.signup-subtitle {
+  font-size: 16px;
+  color: #616061;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #dddddd;
+  border-radius: 4px;
+  font-size: 16px;
+  outline: none;
+}
+
+.form-group input:focus {
+  border-color: #1264a3;
+  box-shadow: 0 0 0 1px #1264a3;
+}
+
+.continue-button {
+  width: 100%;
+  background-color: #1d1c1d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 8px;
+  margin-bottom: 24px;
+}
+
+.continue-button:hover {
+  background-color: #000000;
+}
+
+.continue-button:disabled {
+  background-color: #7c7c7c;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.divider-line {
+  flex-grow: 1;
+  height: 1px;
+  background-color: #dddddd;
+}
+
+.divider-text {
+  padding: 0 16px;
+  color: #616061;
+  font-size: 14px;
+}
+
+.oauth-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  border: 1px solid #dddddd;
+  border-radius: 4px;
+  background-color: white;
+  font-size: 16px;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+
+.oauth-button:hover {
+  background-color: #f8f8f8;
+}
+
+.oauth-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+}
+
+.signin-link {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 14px;
+  color: #616061;
+}
+
+.signin-link a {
+  color: #1264a3;
+  text-decoration: none;
+}
+
+.signin-link a:hover {
+  text-decoration: underline;
+}
