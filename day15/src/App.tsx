@@ -32,7 +32,7 @@ function App() {
 
   return (
     <>
-      <BrowserRouter basename="/day14/">
+      <BrowserRouter>
         <div>
           <Routes>
             <Route path="/signup" element={<Signup />} />

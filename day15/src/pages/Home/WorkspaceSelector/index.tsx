@@ -1,14 +1,14 @@
-// import CreateWorkspaceModal from './CreateWorkspaceModal';
-// import ProfileModal from './ProfileModal';
+import CreateWorkspaceModal from './CreateWorkspaceModal';
+import ProfileModal from './ProfileModal';
 
 function WorkspaceSelector() {
   return (
     <div className="workspace-selector">
       <div className="workspaces">
-        <div key={1} className={"workspace-icon"}>
+        <div key={1} className={'workspace-icon'}>
           A
         </div>
-        <div key={2} className={"workspace-icon"}>
+        <div key={2} className={'workspace-icon'}>
           B
         </div>
         <div className="workspace-icon add">+</div>
@@ -17,7 +17,7 @@ function WorkspaceSelector() {
         <div className={`avatar-img `}>
           <img
             src={
-              "https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_960_720.png"
+              'https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_960_720.png'
             }
             alt="Posted image"
             className="message-image"
