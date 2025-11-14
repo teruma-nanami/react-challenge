@@ -2,9 +2,9 @@
 import api from "../../lib/api";
 import { User } from "../users/user.entity";
 
+// ユーザー認証に関する処理をまとめたオブジェクト
 export const authRepository = {
-  // ユーザー認証に関する処理をまとめたオブジェクト
-
+  // signup関数: ユーザー登録処理
   async signup(
     name: string,
     email: string,
@@ -28,6 +28,21 @@ export const authRepository = {
 
     // userは生データなので、Userクラスのインスタンスに変換して返す
     // tokenはそのまま返す
+    return { user: new User(user), token };
+  },
+
+  // signin関数: ユーザーログイン処理
+  async signin(
+    email: string,
+    password: string
+  ) : Promise<{ user: User; token: string }> {
+    const result = await api.post("/auth/signin", {
+      email,
+      password,
+    });
+
+    const { user, token } = result.data;
+
     return { user: new User(user), token };
   },
 };
