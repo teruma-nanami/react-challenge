@@ -1,9 +1,9 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./App.css";
-import CreateWorkspace from "./CreateWorkspace";
-import Home from "./Home";
-import Signin from "./Signin";
-import Signup from "./Signup";
+import CreateWorkspace from "./pages/CreateWorkspace";
+import Home from "./pages/Home";
+import Signin from "./pages/Signin";
+import Signup from "./pages/Signup";
 
 function App() {
   return (
