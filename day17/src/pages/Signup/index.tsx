@@ -1,12 +1,14 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { authRepository } from "../../modules/auth/auth.repository";
+import { useCurrentUserStore } from "../../modules/auth/current-user.state";
 import "./auth.css";
 
 function Signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { currentUser, setCurrentUser } = useCurrentUserStore();
 
   const signup = async () => {
     if (name === "" || email === "" || password === "") return;
@@ -16,11 +18,16 @@ function Signup() {
         email,
         password
       );
-      console.log(user, token);
+      localStorage.setItem("Token", token);
+      setCurrentUser(user);
     } catch (error) {
       console.error("Signup failed:", error);
     }
   };
+
+  if (currentUser != null) {
+    return <Navigate to="/" />;
+  }
 
   return (
     <div className="signup-container">
