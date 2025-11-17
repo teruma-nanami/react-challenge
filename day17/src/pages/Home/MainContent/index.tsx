@@ -1,14 +1,46 @@
-function MainContent() {
+import { useNavigate } from "react-router-dom";
+import { Channel } from "../../../modules/channels/channel.entity";
+import { channelRepository } from "../../../modules/channels/channel.repository";
+
+interface Props {
+  channels: Channel[];
+  selectedChannel: Channel;
+  setChannels: (channels: Channel[]) => void;
+  selectedWorkspaceId: string;
+}
+
+function MainContent(props: Props) {
+  const { selectedChannel, channels, setChannels, selectedWorkspaceId } = props;
+  const navigate = useNavigate();
+  // const [content, setContent] = useState("");
+  // const { currentUser } = useCurrentUserStore();
+
+  const deleteChannel = async () => {
+    try {
+      const confirmed = window.confirm(
+        "このチャンネルを削除しますか？この操作は取り消せません。"
+      );
+      if (!confirmed) return;
+      await channelRepository.delete(selectedChannel.id);
+      const updatedChannels = channels.filter(
+        (channel) => channel.id !== selectedChannel.id
+      );
+      setChannels(updatedChannels);
+      navigate(`/${selectedWorkspaceId}/${updatedChannels[0].id}`);
+    } catch (error) {
+      console.error("チャンネルの削除に失敗しました", error);
+    }
+  };
   return (
     <div className="main-content">
       <header className="channel-header">
         <div className="channel-info">
-          <h2># {'test'}</h2>
+          <h2># {selectedChannel.name}</h2>
         </div>
         <div className="channel-actions">
           <button
             className="delete-channel-button"
-            onClick={() => {}}
+            onClick={deleteChannel}
             title="チャンネルを削除"
           >
             <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
@@ -19,18 +51,18 @@ function MainContent() {
       </header>
       <div
         className="messages-container"
-        style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 150px)' }}
+        style={{ overflowY: "auto", maxHeight: "calc(100vh - 150px)" }}
       >
         <div
           key={1}
-          style={{ display: 'flex', flexDirection: 'column-reverse' }}
+          style={{ display: "flex", flexDirection: "column-reverse" }}
         >
           <div key={1} className="message">
             <div className="avatar">
               <div className={`avatar-img `}>
                 <img
                   src={
-                    'https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_960_720.png'
+                    "https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_960_720.png"
                   }
                   alt="Posted image"
                   className="message-image"
@@ -39,8 +71,8 @@ function MainContent() {
             </div>
             <div className="message-content">
               <div className="message-header">
-                <span className="username">{'test'}</span>
-                <span className="timestamp">{'2025/05/11 12:23'}</span>
+                <span className="username">{"test"}</span>
+                <span className="timestamp">{"2025/05/11 12:23"}</span>
                 <button
                   className="message-delete-button"
                   title="メッセージを削除"
@@ -55,11 +87,11 @@ function MainContent() {
                   </svg>
                 </button>
               </div>
-              <div className="message-text">{'test'}</div>
+              <div className="message-text">{"test"}</div>
             </div>
           </div>
           <div className="date-divider">
-            <span>{'2025/05/11'}</span>
+            <span>{"2025/05/11"}</span>
           </div>
         </div>
       </div>
@@ -67,7 +99,7 @@ function MainContent() {
         <div className="message-input-wrapper">
           <textarea className="message-input" placeholder="Message" />
           <div className="image-upload">
-            <input type="file" style={{ display: 'none' }} accept="image/*" />
+            <input type="file" style={{ display: "none" }} accept="image/*" />
             <button className="action-button">
               <svg
                 viewBox="0 0 20 20"

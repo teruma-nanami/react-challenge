@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useCurrentUserStore } from "../../../modules/auth/current-user.state";
 import { useUiStore } from "../../../modules/ui/ui.state";
 import { Workspace } from "../../../modules/workspaces/workspace.entity";
 import { workspaceRepository } from "../../../modules/workspaces/workspace.repository";
@@ -15,6 +16,7 @@ function WorkspaceSelector(props: Props) {
   const { showCreateWorkspaceModal, setShowCreateWorkspaceModal } =
     useUiStore();
   const navigate = useNavigate();
+  const { setCurrentUser } = useCurrentUserStore();
 
   const createWorkspace = async (name: string) => {
     try {
@@ -26,6 +28,11 @@ function WorkspaceSelector(props: Props) {
     } catch (error) {
       console.error("Failed to create workspace:", error);
     }
+  };
+
+  const logout = () => {
+    setCurrentUser(undefined);
+    navigate("/signin");
   };
 
   return (
@@ -76,6 +83,7 @@ function WorkspaceSelector(props: Props) {
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
+            onClick={logout}
           >
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
             <polyline points="16 17 21 12 16 7"></polyline>
