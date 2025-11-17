@@ -1,4 +1,12 @@
-function CreateWorkspaceModal() {
+import { useState } from "react";
+
+interface Props {
+  onsubmit: (name: string) => void;
+  allowCancel?: boolean;
+}
+
+function CreateWorkspaceModal(props: Props) {
+  const [workspaceName, setWorkspaceName] = useState("");
   return (
     <div className="profile-modal-overlay">
       <div className="profile-modal" onClick={(e) => e.stopPropagation()}>
@@ -16,6 +24,8 @@ function CreateWorkspaceModal() {
                 name="workspaceName"
                 className="profile-input"
                 placeholder="新しいワークスペース名を入力してください"
+                value={workspaceName}
+                onChange={(e) => setWorkspaceName(e.target.value)}
                 autoFocus
               />
               <div className="help-text">
@@ -26,8 +36,16 @@ function CreateWorkspaceModal() {
         </div>
 
         <div className="profile-modal-footer">
-          <button className="cancel-button">キャンセル</button>
-          <button className="save-button">作成</button>
+          {props.allowCancel && (
+            <button className="cancel-button">キャンセル</button>
+          )}
+          <button
+            className="save-button"
+            onClick={() => props.onsubmit(workspaceName)}
+            disabled={workspaceName.trim() === ""}
+          >
+            作成
+          </button>
         </div>
       </div>
     </div>
