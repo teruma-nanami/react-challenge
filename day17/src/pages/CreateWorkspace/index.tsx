@@ -53,7 +53,7 @@ function CreateWorkspace() {
   }
   return (
     <div>
-      <CreateWorkspaceModal onsubmit={CreateWorkspace} />
+      <CreateWorkspaceModal onSubmit={CreateWorkspace} />
     </div>
   );
 }

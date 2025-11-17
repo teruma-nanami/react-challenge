@@ -1,11 +1,15 @@
-import CreateChannelModal from './CreateChannelModal';
-import UserSearchModal from './UserSearchModal';
+import { Workspace } from "../../../modules/workspaces/workspace.entity";
 
-function Sidebar() {
+interface Props {
+  selectedWorkspace: Workspace;
+}
+
+function Sidebar(props: Props) {
+  const { selectedWorkspace } = props;
   return (
     <div className="sidebar">
       <div className="workspace-header">
-        <h2>{'test'}</h2>
+        <h2>{selectedWorkspace.name}</h2>
       </div>
       <div className="sidebar-section">
         <div className="section-header channels-header">
@@ -19,8 +23,8 @@ function Sidebar() {
           <h3>Channels</h3>
         </div>
         <ul className={`channels-list expanded`}>
-          <li key={1} className={'active'}>
-            <span className="channel-icon">#</span> {'test'}
+          <li key={1} className={"active"}>
+            <span className="channel-icon">#</span> {"test"}
           </li>
           <li>
             <span className="channel-icon add">+</span> Add channels
