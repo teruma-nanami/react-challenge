@@ -4,6 +4,7 @@ import { channelRepository } from "../../../modules/channels/channel.repository"
 import { useUiStore } from "../../../modules/ui/ui.state";
 import { Workspace } from "../../../modules/workspaces/workspace.entity";
 import CreateChannelModal from "./CreateChannelModal";
+import UserSearchModal from "./UserSearchModal";
 
 interface Props {
   selectedWorkspace: Workspace;
@@ -17,8 +18,8 @@ function Sidebar(props: Props) {
   const {
     showCreateChannelModal,
     setShowCreateChannelModal,
-    // showUserSearchModal,
-    // setShowUserSearchModal,
+    showUserSearchModal,
+    setShowUserSearchModal,
   } = useUiStore();
   const navigate = useNavigate();
 
@@ -68,13 +69,20 @@ function Sidebar(props: Props) {
         </ul>
 
         <div className="section-header channels-header">
-          <span className="channel-icon add">+</span> Invite Pepole
+          <span
+            className="channel-icon add"
+            onClick={() => setShowUserSearchModal(true)}
+          >
+            + Invite People
+          </span>{" "}
         </div>
       </div>
       {showCreateChannelModal && (
         <CreateChannelModal onSubmit={createChannel} />
       )}
-      {/* <UserSearchModal /> */}
+      {showUserSearchModal && (
+        <UserSearchModal workspaceId={selectedWorkspace.id} />
+      )}
     </div>
   );
 }
