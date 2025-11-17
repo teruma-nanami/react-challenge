@@ -1,11 +1,40 @@
+import { useNavigate } from "react-router-dom";
+import { Channel } from "../../../modules/channels/channel.entity";
+import { channelRepository } from "../../../modules/channels/channel.repository";
+import { useUiStore } from "../../../modules/ui/ui.state";
 import { Workspace } from "../../../modules/workspaces/workspace.entity";
+import CreateChannelModal from "./CreateChannelModal";
 
 interface Props {
   selectedWorkspace: Workspace;
+  selectedChannelId: string;
+  channels: Channel[];
+  setChannels: (channels: Channel[]) => void;
 }
 
 function Sidebar(props: Props) {
-  const { selectedWorkspace } = props;
+  const { selectedWorkspace, selectedChannelId, channels, setChannels } = props;
+  const {
+    showCreateChannelModal,
+    setShowCreateChannelModal,
+    // showUserSearchModal,
+    // setShowUserSearchModal,
+  } = useUiStore();
+  const navigate = useNavigate();
+
+  const createChannel = async (name: string) => {
+    try {
+      const newChannel = await channelRepository.create(
+        selectedWorkspace.id,
+        name
+      );
+      setChannels([...channels, newChannel]);
+      setShowCreateChannelModal(false);
+      navigate(`/${selectedWorkspace.id}/${newChannel.id}`);
+    } catch (error) {
+      console.error("チャンネルの作成に失敗しました", error);
+    }
+  };
   return (
     <div className="sidebar">
       <div className="workspace-header">
@@ -23,10 +52,17 @@ function Sidebar(props: Props) {
           <h3>Channels</h3>
         </div>
         <ul className={`channels-list expanded`}>
-          <li key={1} className={"active"}>
-            <span className="channel-icon">#</span> {"test"}
-          </li>
-          <li>
+          {channels.map((channel) => (
+            <li
+              key={channel.id}
+              className={channel.id == selectedChannelId ? "active" : ""}
+              onClick={() => navigate(`/${selectedWorkspace.id}/${channel.id}`)}
+            >
+              <span className="channel-icon">#</span> {channel.name}
+            </li>
+          ))}
+
+          <li onClick={() => setShowCreateChannelModal(true)}>
             <span className="channel-icon add">+</span> Add channels
           </li>
         </ul>
@@ -35,7 +71,9 @@ function Sidebar(props: Props) {
           <span className="channel-icon add">+</span> Invite Pepole
         </div>
       </div>
-      {/* <CreateChannelModal /> */}
+      {showCreateChannelModal && (
+        <CreateChannelModal onSubmit={createChannel} />
+      )}
       {/* <UserSearchModal /> */}
     </div>
   );
