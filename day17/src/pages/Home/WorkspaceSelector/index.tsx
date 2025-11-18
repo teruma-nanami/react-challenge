@@ -38,7 +38,6 @@ function WorkspaceSelector(props: Props) {
   const logout = () => {
     localStorage.removeItem("Token");
     setCurrentUser(undefined);
-    navigate("/signin");
   };
 
   return (
@@ -58,12 +57,6 @@ function WorkspaceSelector(props: Props) {
             {workspace.name.charAt(0)}
           </div>
         ))}
-      </div>
-      <div className="user-profile">
-        <div
-          className={`avatar-img `}
-          onClick={() => setShowCreateWorkspaceModal(true)}
-        ></div>
         <div
           className="workspace-icon add"
           onClick={() => setShowCreateWorkspaceModal(true)}
