@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navigate, useParams } from "react-router-dom";
+import { subscribe, unsubscribe } from "../../lib/socket";
 import { useCurrentUserStore } from "../../modules/auth/current-user.state";
 import { Channel } from "../../modules/channels/channel.entity";
 import { channelRepository } from "../../modules/channels/channel.repository";
@@ -23,6 +24,14 @@ function Home() {
     (workspace) => workspace.id === workspaceId
   );
   const selectedChannel = channels.find((channel) => channel.id == channelId);
+
+  const handleNewMessage = (message: Message) => {
+    setMessages((messages) => [message, ...messages]);
+  };
+
+  const handleDeleteMessage = (messageId: string) => {
+    setMessages((messages) => messages.filter((msg) => msg.id !== messageId));
+  };
   useEffect(() => {
     (async () => {
       try {
@@ -44,6 +53,10 @@ function Home() {
         console.error("Failed to fetch channels:", error);
       }
     })();
+    subscribe(workspaceId, handleNewMessage, handleDeleteMessage);
+    return () => {
+      unsubscribe(workspaceId);
+    };
   }, [workspaceId]);
 
   useEffect(() => {
