@@ -62,15 +62,14 @@ function ProfileModal() {
                 <label>Profile photo</label>
                 <div className="profile-photo-container">
                   <div className="profile-photo-placeholder">
-                    <div className="profile-photo-circle" />
                     {thumbnailUrl != null ? (
                       <img
                         src={thumbnailUrl}
                         alt="Profile Thumbnail"
-                        className="profile-photo-img"
+                        className="profile-photo-preview"
                       />
                     ) : (
-                      <div className="profile-photo-initials" />
+                      <div className="profile-photo-circle" />
                     )}
                   </div>
                 </div>
