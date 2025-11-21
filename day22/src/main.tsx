@@ -7,7 +7,7 @@ import App from "./App.tsx";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ChakraProvider>
-      <BrowserRouter basename="/day21">
+      <BrowserRouter>
         <App />
       </BrowserRouter>
     </ChakraProvider>
