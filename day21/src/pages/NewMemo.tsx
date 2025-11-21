@@ -1,16 +1,7 @@
-import {
-  Box,
-  Button,
-  ButtonGroup,
-  FormControl,
-  FormLabel,
-  Heading,
-  Input,
-  Textarea,
-  VStack,
-} from "@chakra-ui/react";
+import { Box, Button, ButtonGroup, Heading, VStack } from "@chakra-ui/react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { MemoForm } from "../components/MemoForm";
 import type { Memo } from "../types/memo";
 
 export default function NewMemo() {
@@ -42,28 +33,18 @@ export default function NewMemo() {
       </Heading>
 
       <VStack align="stretch" spacing={5}>
-        <FormControl>
-          <FormLabel>タイトル</FormLabel>
-          <Input
-            placeholder="タイトルを入力"
-            value={newTitle}
-            onChange={(e) => setNewTitle(e.target.value)}
-          />
-        </FormControl>
-
-        <FormControl>
-          <FormLabel>本文</FormLabel>
-          <Textarea
-            placeholder="本文を入力"
-            rows={8}
-            value={newMemo}
-            onChange={(e) => setNewMemo(e.target.value)}
-          />
-        </FormControl>
+        <MemoForm
+          title={newTitle}
+          content={newMemo}
+          setTitle={setNewTitle}
+          setContent={setNewMemo}
+          titleplaceholder="メモのタイトルを入力"
+          contentplaceholder="メモの内容を入力"
+        />
 
         <ButtonGroup>
           <Button
-            colorScheme="teal"
+            colorScheme="purple"
             onClick={memoSave}
             disabled={!newTitle || !newMemo}
           >

@@ -5,9 +5,13 @@ export default function Layout() {
   return (
     <Flex direction="column" minH="100vh">
       {/* ヘッダー */}
-      <Box bg="teal.500" color="white" p={4}>
+      <Box bg="purple.600" color="white" p={4}>
         <Flex gap={4} mt={2}>
-          <Heading size="md">メモアプリ</Heading>
+          <Heading size="md">
+            <Link as={RouterLink} to="/" _hover={{ textDecoration: "none" }}>
+              メモアプリ
+            </Link>
+          </Heading>
           <Link as={RouterLink} to="/">
             Home
           </Link>
@@ -26,7 +30,7 @@ export default function Layout() {
       </Box>
 
       {/* フッター */}
-      <Box bg="gray.100" p={4} textAlign="center">
+      <Box bg="purple.100" p={4} textAlign="center">
         © 2025 MemoApp
       </Box>
     </Flex>
