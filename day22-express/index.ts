@@ -7,6 +7,10 @@ app.get("/", (req, res) => {
   res.send("Hello, live Server!");
 });
 
+app.get("/test", (req, res) => {
+  res.send("Hello, test route!");
+});
+
 app.listen(PORT, () => {
   console.log(`サーバーが起動しました。http://localhost:${PORT}/`);
 });
