@@ -1,42 +1,37 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-type User = {
-  username: string;
-  password: string;
-};
+import { login, logout } from "../app/features/authSlice";
+import { useAppDispatch, useAppSelector } from "../app/hooks";
 
 export const useAuth = () => {
-  const [user, setUser] = useState<User | null>(() => {
-    const storedUser = sessionStorage.getItem("user");
-    return storedUser ? JSON.parse(storedUser) : null;
-  });
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.auth.user);
   const navigate = useNavigate();
 
   const Register = (username: string, password: string) => {
     const newUser = { username, password };
     sessionStorage.setItem("registeredUser", JSON.stringify(newUser));
     sessionStorage.setItem("user", JSON.stringify(newUser));
-    setUser(newUser);
+    dispatch(login(username)); // Redux に反映
   };
-  const login = (username: string, password: string) => {
+
+  const loginUser = (username: string, password: string) => {
     const registeredUser = sessionStorage.getItem("registeredUser");
     if (!registeredUser) return false;
 
-    const parsedUser: User = JSON.parse(registeredUser);
+    const parsedUser = JSON.parse(registeredUser);
     if (parsedUser.username === username && parsedUser.password === password) {
       sessionStorage.setItem("user", JSON.stringify(parsedUser));
-      setUser(parsedUser);
+      dispatch(login(username)); // Redux に反映
       return true;
     }
     return false;
   };
 
-  const logout = () => {
+  const logoutUser = () => {
     sessionStorage.removeItem("user");
-    setUser(null);
+    dispatch(logout()); // Redux に反映
     navigate("/login");
   };
 
-  return { user, Register, login, logout };
+  return { user, Register, login: loginUser, logout: logoutUser };
 };
