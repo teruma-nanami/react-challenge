@@ -1,10 +1,28 @@
 import express from "express";
 
 const app = express();
+app.use(express.json());
+app.use(express.static("public"));
 const PORT = 8888;
 
 app.get("/", (req, res) => {
-  res.send("Hello, live Server!");
+  res.sendFile(__dirname + "/public/index.html");
+});
+
+app.get("/users/:id", (req, res) => {
+  res.send(`Hello, user ${req.params.id} route!`);
+});
+
+app.post("/", (req, res) => {
+  res.send(req.body);
+});
+
+app.put("/users/:id", (req, res) => {
+  res.send(req.body);
+});
+
+app.delete("/users/:id", (req, res) => {
+  res.send(req.params.id);
 });
 
 app.listen(PORT, () => {
