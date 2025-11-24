@@ -9,12 +9,11 @@ import { store } from "./app/store.ts";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <Provider store={store}>
-          <ChakraProvider>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </ChakraProvider>
+      <ChakraProvider>
+        <BrowserRouter basename="/day23/">
+          <App />
+        </BrowserRouter>
+      </ChakraProvider>
     </Provider>
-
   </StrictMode>
 );
