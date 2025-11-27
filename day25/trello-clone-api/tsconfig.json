@@ -29,5 +29,10 @@
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "skipLibCheck": true,
+
+    //　Experimental Options
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strictPropertyInitialization": false
   }
 }
