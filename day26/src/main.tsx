@@ -8,7 +8,7 @@ import "./index.css";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ChakraProvider>
-      <BrowserRouter>
+      <BrowserRouter basename="/day26">
         <App />
       </BrowserRouter>
     </ChakraProvider>
