@@ -19,6 +19,6 @@ COPY php.ini /usr/local/etc/php/
 # 作業ディレクトリの設定
 WORKDIR /var/www
 
-// Node.js 20 を追加 React v18はnode.js20.x要求
+# Node.js 20 を追加 React v18はnode.js20.x要求
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt install -y nodejs
