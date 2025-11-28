@@ -30,6 +30,7 @@ services:
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
+    platform: linux/arm64/v8
     environment:
       - PMA_ARBITRARY=1
       - PMA_HOST=mysql
