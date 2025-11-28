@@ -3,7 +3,8 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 import { HamburgerButton } from "../ui/HamburgerButton";
 
 // Small util to join class names
-const cx = (...v: Array<string | false | null | undefined>) => v.filter(Boolean).join(" ");
+const cx = (...v: Array<string | false | null | undefined>) =>
+  v.filter(Boolean).join(" ");
 
 // メニュー定義（常時表示。ログイン機構は撤去済みのため簡略化）
 const NAV_ITEMS = [
@@ -16,7 +17,10 @@ const NAV_ITEMS = [
 
 function LinkItem({ to, label }: { to: string; label: string }) {
   return (
-    <NavLink to={to} className={({ isActive }) => cx("nav-link", isActive && "is-active")}>
+    <NavLink
+      to={to}
+      className={({ isActive }) => cx("nav-link", isActive && "is-active")}
+    >
       {label}
     </NavLink>
   );
@@ -26,13 +30,19 @@ function LinkItem({ to, label }: { to: string; label: string }) {
 
 type NavItem = { to: string; label: string };
 
-function MobileMenu({ open, items }: { open: boolean; items: readonly NavItem[] }) {
+function MobileMenu({
+  open,
+  items,
+}: {
+  open: boolean;
+  items: readonly NavItem[];
+}) {
   return (
     <div
       id="mobile-menu"
       className={cx(
         "md:hidden overflow-hidden transition-[max-height] duration-300",
-        open ? "max-h-64" : "max-h-0",
+        open ? "max-h-64" : "max-h-0"
       )}
     >
       <div className="mx-auto max-w-6xl px-4 pb-4 flex flex-col gap-2">
@@ -53,10 +63,17 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/70 dark:border-white/10 bg-white/90 dark:bg-slate-900/80 backdrop-blur supports-[backdrop-filter]:bg-white/70">
-      <nav className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between" aria-label="Primary">
+      <nav
+        className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between"
+        aria-label="Primary"
+      >
         {/* Brand */}
         <div className="flex items-center gap-3">
-          <Link to="/" className="flex items-center gap-2 group" aria-label="Go to home">
+          <Link
+            to="/"
+            className="flex items-center gap-2 group"
+            aria-label="Go to home"
+          >
             <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-fuchsia-600 text-white shadow" />
             <span className="text-base sm:text-lg font-extrabold tracking-tight text-slate-900 dark:text-slate-50">
               ユーザー管理アプリ

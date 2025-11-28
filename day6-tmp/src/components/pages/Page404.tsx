@@ -16,7 +16,8 @@ export const Page404 = memo(() => {
           </h2>
 
           <p className="mx-auto max-w-prose text-slate-600 dark:text-slate-300 leading-relaxed">
-            The page you are looking for does not exist. Please check the URL or return to the home page.
+            The page you are looking for does not exist. Please check the URL or
+            return to the home page.
           </p>
 
           <div className="pt-2 flex items-center justify-center gap-3">
