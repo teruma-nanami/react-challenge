@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo } from "react";
 
 export const Home = memo(() => {
   return (
@@ -9,7 +9,6 @@ export const Home = memo(() => {
       </p>
     </div>
   );
-}
-);
+});
 
 export default Home;

@@ -30,7 +30,7 @@ function ProfileModal() {
                 <input
                   type="file"
                   accept="image/*"
-                  style={{ display: 'none' }}
+                  style={{ display: "none" }}
                 />
                 <button className="upload-photo-button">Upload Photo</button>
               </div>

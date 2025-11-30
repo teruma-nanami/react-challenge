@@ -1,7 +1,7 @@
-import WorkspaceSelector from './WorkspaceSelector';
-import './Home.css';
-import Sidebar from './Sidebar';
-import MainContent from './MainContent';
+import "./Home.css";
+import MainContent from "./MainContent";
+import Sidebar from "./Sidebar";
+import WorkspaceSelector from "./WorkspaceSelector";
 
 function Home() {
   return (

@@ -17,7 +17,7 @@ api.defaults.headers.common["Content-Type"] = "application/json";
 
 // リクエストインターセプターを登録
 // → リクエストが送られる直前に addAuthorizationHeader が呼ばれ、
-//    トークンがあれば Authorization ヘッダーを自動で付与してくれる
+//トークンがあれば Authorization ヘッダーを自動で付与してくれる
 api.interceptors.request.use(addAuthorizationHeader);
 
 // この axios インスタンスを他のファイルから使えるように export
