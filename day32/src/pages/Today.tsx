@@ -16,19 +16,10 @@ export default function Today() {
       </Heading>
 
       <VStack align="stretch" spacing={8}>
-        {/* やるべきタスク */}
-        <Box>
-          <Heading size="md" mb={3} color="orange.500">
-            やるべきタスク <Badge colorScheme="orange">Priority</Badge>
-          </Heading>
-          {/* TaskItem をここに並べる */}
-          <Divider borderColor="orange.200" />
-        </Box>
-
         {/* 通常タスク */}
         <Box>
           <Heading size="md" mb={3} color="orange.500">
-            通常タスク <Badge colorScheme="yellow">Normal</Badge>
+            本日のタスク <Badge colorScheme="yellow">Normal</Badge>
           </Heading>
           {/* TaskItem をここに並べる */}
           <Divider borderColor="yellow.200" />

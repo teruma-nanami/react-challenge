@@ -39,6 +39,7 @@ export default function HabitCreate() {
           <Select placeholder="選択してください" focusBorderColor="orange.400">
             <option value="daily">毎日</option>
             <option value="weekly">毎週</option>
+            <option value="monthly">毎月</option>
             {/* <option value="custom">カスタム</option> */}
           </Select>
         </FormControl>
