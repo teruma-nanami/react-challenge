@@ -7,7 +7,7 @@ import App from "./App";
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ChakraProvider>
-      <BrowserRouter>
+      <BrowserRouter basename="/day32/">
         <App />
       </BrowserRouter>
     </ChakraProvider>
