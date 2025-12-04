@@ -1,4 +1,5 @@
-import { Badge, Box, Button, Divider, Heading, VStack } from "@chakra-ui/react";
+import { Badge, Box, Divider, Heading, VStack } from "@chakra-ui/react";
+import AddHabitModal from "../components/AddHabitModal";
 
 export default function Habits() {
   return (
@@ -27,9 +28,7 @@ export default function Habits() {
 
         {/* 新規作成ボタン */}
         <Box textAlign="center">
-          <Button colorScheme="orange" size="lg">
-            習慣を追加
-          </Button>
+          <AddHabitModal />
         </Box>
       </VStack>
     </Box>

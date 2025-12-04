@@ -20,7 +20,6 @@ export default function Layout() {
         <HStack spacing={6}>
           <Link to="/">Today</Link>
           <Link to="/habits">Habits</Link>
-          <Link to="/habit-create">Create Habit</Link>
           <Link to="/someday">Someday</Link>
         </HStack>
       </Flex>

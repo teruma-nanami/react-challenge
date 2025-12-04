@@ -1,4 +1,5 @@
 import { Badge, Box, Divider, Heading, VStack } from "@chakra-ui/react";
+import AddTaskModal from "../components/AddTaskModal";
 
 export default function Today() {
   return (
@@ -15,6 +16,7 @@ export default function Today() {
         今日のタスク一覧
       </Heading>
 
+      <AddTaskModal onSave={(title) => console.log(title)} />
       <VStack align="stretch" spacing={8}>
         {/* 通常タスク */}
         <Box>
