@@ -12,8 +12,8 @@ import {
   Textarea,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import { useHabits } from "../hooks/useHabits";
-import type { Habit } from "../types/Habit"; // Habitだけexportされているのでこれをimport
+import { useHabits } from "../../hooks/useHabits";
+import type { Habit } from "../../types/Habit"; // Habitだけexportされているのでこれをimport
 import { BaseModal } from "./BaseModal";
 import { useBaseModal } from "./useBaseModal";
 

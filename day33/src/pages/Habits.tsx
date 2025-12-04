@@ -1,5 +1,6 @@
 import { Badge, Box, Divider, Heading, VStack } from "@chakra-ui/react";
-import AddHabitModal from "../components/AddHabitModal";
+import { HabitList } from "../components/HabitList";
+import { AddHabitModal } from "../components/modal/AddHabitModal";
 
 export default function Habits() {
   return (
@@ -22,7 +23,7 @@ export default function Habits() {
           <Heading size="md" mb={3} color="orange.500">
             登録済みの習慣 <Badge colorScheme="yellow">List</Badge>
           </Heading>
-          {/* HabitItem をここに並べる */}
+          <HabitList />
           <Divider borderColor="yellow.200" />
         </Box>
 

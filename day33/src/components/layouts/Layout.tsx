@@ -14,7 +14,9 @@ export default function Layout() {
         justify="space-between"
       >
         {/* 左側タイトル */}
-        <Heading size="md">Todo App</Heading>
+        <Heading size="md">
+          <Link to="/">Todo App</Link>
+        </Heading>
 
         {/* 右側ナビゲーション */}
         <HStack spacing={6}>

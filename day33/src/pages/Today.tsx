@@ -1,7 +1,12 @@
-import { Badge, Box, Divider, Heading, VStack } from "@chakra-ui/react";
-import AddTaskModal from "../components/AddTaskModal";
+import { Badge, Box, Divider, Flex, Heading, VStack } from "@chakra-ui/react";
+import { HabitList } from "../components/HabitList";
+import { AddTaskModal } from "../components/modal/AddTaskModal";
+import { TaskList } from "../components/TaskList";
+import { useTasks } from "../hooks/useTasks";
 
 export default function Today() {
+  const { tasks, addTask, toggleTask, updateTask, deleteTask } = useTasks();
+
   return (
     <Box
       p={6}
@@ -12,18 +17,27 @@ export default function Today() {
       mx="auto" // 中央寄せ
     >
       {/* ページタイトル */}
-      <Heading size="lg" mb={6} color="orange.900" textAlign="center">
-        今日のタスク一覧
-      </Heading>
+      <Flex align="center" justify="space-between" mb={6}>
+        <Heading size="lg" color="orange.900" textAlign="center" flex="1">
+          今日のタスク一覧
+        </Heading>
+        <Box>
+          <AddTaskModal addTask={addTask} />
+        </Box>
+      </Flex>
 
-      <AddTaskModal onSave={(title) => console.log(title)} />
       <VStack align="stretch" spacing={8}>
         {/* 通常タスク */}
         <Box>
           <Heading size="md" mb={3} color="orange.500">
             本日のタスク <Badge colorScheme="yellow">Normal</Badge>
           </Heading>
-          {/* TaskItem をここに並べる */}
+          <TaskList
+            tasks={tasks.filter((task) => !task.isDone)}
+            toggleTask={toggleTask}
+            updateTask={updateTask}
+            deleteTask={deleteTask}
+          />
           <Divider borderColor="yellow.200" />
         </Box>
 
@@ -32,7 +46,7 @@ export default function Today() {
           <Heading size="md" mb={3} color="orange.500">
             習慣タスク <Badge colorScheme="yellow">Habit</Badge>
           </Heading>
-          {/* HabitItem をここに並べる */}
+          <HabitList />
           <Divider borderColor="yellow.200" />
         </Box>
 
@@ -41,7 +55,12 @@ export default function Today() {
           <Heading size="md" mb={3} color="orange.500">
             完了済み <Badge colorScheme="green">Done</Badge>
           </Heading>
-          {/* 完了した TaskItem をここに並べる */}
+          <TaskList
+            tasks={tasks.filter((task) => task.isDone)}
+            toggleTask={toggleTask}
+            updateTask={updateTask}
+            deleteTask={deleteTask}
+          />
           <Divider borderColor="green.200" />
         </Box>
       </VStack>

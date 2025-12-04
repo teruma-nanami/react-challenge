@@ -8,12 +8,17 @@ import {
   Textarea,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import { useTasks } from "../hooks/useTasks";
+import { useTasks } from "../../hooks/useTasks";
+import type { Task } from "../../types/Task";
 import { BaseModal } from "./BaseModal";
 import { useBaseModal } from "./useBaseModal";
 
-export const AddTaskModal = () => {
-  const { tasks, addTask } = useTasks();
+type Props = {
+  addTask: (task: Task) => void;
+};
+
+export const AddTaskModal = ({ addTask }: Props) => {
+  const { tasks } = useTasks();
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
   const modal = useBaseModal();
@@ -36,7 +41,7 @@ export const AddTaskModal = () => {
 
   return (
     <BaseModal
-      trigger={<Button colorScheme="orange">+</Button>}
+      trigger={<Button colorScheme="orange">本日のタスク追加</Button>}
       isOpen={modal.isOpen}
       onOpen={modal.open}
       onClose={modal.close}
