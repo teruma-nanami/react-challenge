@@ -3,5 +3,5 @@ export type Task = {
   title: string;
   isDone: boolean;
   order: number;
-  note?: string;
+  notes?: string;
 };

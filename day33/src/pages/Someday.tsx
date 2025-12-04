@@ -1,4 +1,6 @@
-import { Badge, Box, Button, Divider, Heading, VStack } from "@chakra-ui/react";
+import { Badge, Box, Divider, Heading, VStack } from "@chakra-ui/react";
+import { AddSomedayModal } from "../components/modal/AddSomedayModal";
+import { SomedayList } from "../components/SomedayList";
 
 export default function Someday() {
   return (
@@ -21,15 +23,13 @@ export default function Someday() {
           <Heading size="md" mb={3} color="orange.500">
             登録済みのタスク <Badge colorScheme="yellow">List</Badge>
           </Heading>
-          {/* SomedayItem をここに並べる */}
+          <SomedayList />
           <Divider borderColor="yellow.200" />
         </Box>
 
         {/* 新規作成ボタン */}
         <Box textAlign="center">
-          <Button colorScheme="orange" size="lg">
-            タスクを追加
-          </Button>
+          <AddSomedayModal />
         </Box>
       </VStack>
     </Box>

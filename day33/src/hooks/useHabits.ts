@@ -27,6 +27,8 @@ export const useHabits = () => {
 
   // 削除
   const deleteHabit = (habitId: string) => {
+    const ok = window.confirm("このタスクを削除しますか？");
+    if (!ok) return;
     setHabits((prev) => prev.filter((habit) => habit.id !== habitId));
   };
 

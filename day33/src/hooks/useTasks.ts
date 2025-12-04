@@ -21,7 +21,18 @@ export const useTasks = () => {
     );
   };
 
+  const toggleTask = (taskId: string) => {
+    setTasks((prevTasks) =>
+      prevTasks.map((task) =>
+        task.id === taskId ? { ...task, isDone: !task.isDone } : task
+      )
+    );
+  };
+
   const deleteTask = (taskId: string) => {
+    const ok = window.confirm("このタスクを削除しますか？");
+    if (!ok) return;
+
     setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
   };
 
@@ -29,6 +40,7 @@ export const useTasks = () => {
     tasks,
     addTask,
     updateTask,
+    toggleTask,
     deleteTask,
   };
 };

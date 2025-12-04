@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Someday } from "../types/Someday";
 
-export const useSomeday = () => {
+export const useSomedays = () => {
   // 初期化（LocalStorageから読み込み）
   const [somedays, setSomedays] = useState<Someday[]>(() => {
     const storedSomeday = localStorage.getItem("somedays");
@@ -27,8 +27,18 @@ export const useSomeday = () => {
     );
   };
 
+  const toggleSomeday = (id: string) => {
+    setSomedays((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, isDone: !item.isDone } : item
+      )
+    );
+  };
+
   // 削除
   const deleteSomeday = (id: string) => {
+    const ok = window.confirm("このタスクを削除しますか？");
+    if (!ok) return;
     setSomedays((prev) => prev.filter((item) => item.id !== id));
   };
 
@@ -36,6 +46,7 @@ export const useSomeday = () => {
     somedays,
     addSomeday,
     updateSomeday,
+    toggleSomeday,
     deleteSomeday,
   };
 };

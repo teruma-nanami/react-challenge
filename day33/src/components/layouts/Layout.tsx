@@ -14,13 +14,14 @@ export default function Layout() {
         justify="space-between"
       >
         {/* 左側タイトル */}
-        <Heading size="md">Todo App</Heading>
+        <Heading size="md">
+          <Link to="/">Todo App</Link>
+        </Heading>
 
         {/* 右側ナビゲーション */}
         <HStack spacing={6}>
           <Link to="/">Today</Link>
           <Link to="/habits">Habits</Link>
-          <Link to="/habit-create">Create Habit</Link>
           <Link to="/someday">Someday</Link>
         </HStack>
       </Flex>
