@@ -1,0 +1,117 @@
+// usersテーブルの定義
+Table users {
+  id bigint [pk, not null]
+  name varchar
+  email varchar [unique, not null]
+  password varchar [not null]
+  remember_token varchar
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+
+Table user_profiles {
+  user_id int [pk, unique, not null, ref: > users.id]
+  // 主キーかつ一意制約、必須項目、usersテーブルのidを参照
+  app_role varchar [not null]  // 役割 (必須項目)
+  invoice_enabled boolean [not null, default: false]  // デフォルト値設定
+  invoice_number varchar
+  business_name varchar
+  tax_filling_method varchar
+  first_login boolean [not null, default: true]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table categories {
+  id bigint [pk, not null]
+  category_name varchar(100) [not null]
+  default_type varchar(20) [not null] // Revenue or Expense
+  default_tax_category varchar(50) [not null] // TaxablePurchase, Exemptなど
+  is_system_default boolean [not null, default: false]
+  is_user_selectable boolean [not null, default: false]
+  
+  // 複合ユニークインデックスはDBMLの標準的な書き方ではないため、コメントで表現
+  // Indexes: [(`category_name`, `default_type`)]
+  
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table tax_rules {
+  id bigint [pk, not null]
+  rule_type varchar(50) [not null] // 例: ConsumptionTaxRate, StandardDeduction
+  value_numeric decimal(10, 4)
+  value_text varchar
+  fiscal_year smallint [not null]
+  effective_date timestamp [not null]
+  description text
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table ledgers {
+  id bigint [pk, not null]
+  user_id bigint [not null, ref: > users.id] // 帳簿の所有者
+  fiscal_year smallint [not null] // 会計年度
+  status varchar(20) [not null, default: 'Draft'] // Draft, Locked
+  locked_at timestamp
+  
+  // 複合ユニークキー: user_idとfiscal_yearの組み合わせは一意
+  // Indexes: [
+  //   ("user_id", "fiscal_year") [unique]
+  // ]
+  
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table entries {
+  id bigint [pk, not null]
+  ledger_id bigint [not null, ref: > ledgers.id] // 年度帳簿への参照
+  category_id bigint [not null, ref: > categories.id] // 勘定科目への参照
+  tax_rule_id bigint [not null, ref: > tax_rules.id] // 適用税制ルールへの参照
+  
+  transaction_date timestamp [not null]
+  type varchar(20) [not null] // Revenue or Expense
+  amount_inc_tax numeric(15, 2) [not null] // 税込金額
+  tax_category varchar(50) [not null] // 課税区分 (集計ロジックに必須)
+  is_invoice_received boolean [not null, default: false] // インボイス受領フラグ
+  description text
+  partner_name varchar
+  is_high_value boolean [not null, default: false] // 固定資産の判定用
+  
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table assets {
+  id bigint [pk, not null]
+  user_id bigint [not null, ref: > users.id]
+  asset_name varchar [not null]
+  acquisition_date timestamp [not null]
+  acquisition_cost numeric(15, 2) [not null]
+  useful_life smallint [not null]
+  current_book_value numeric(15, 2) [not null]
+  disposed_at timestamp
+  is_depreciation_calculated boolean [not null, default: false]
+  
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table tax_filing_data {
+  id bigint [pk, not null]
+  ledger_id bigint [unique, not null, ref: > ledgers.id] // 帳簿と1対1
+  user_id bigint [not null, ref: > users.id]
+
+  salary_income numeric(15, 2) [default: 0]
+  salary_withholding_tax numeric(15, 2) [default: 0]
+  life_insurance_ded numeric(15, 2) [default: 0]
+  social_insurance_ded numeric(15, 2) [default: 0]
+  medical_expense_ded numeric(15, 2) [default: 0]
+  furusato_tax_ded numeric(15, 2) [default: 0]
+
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
