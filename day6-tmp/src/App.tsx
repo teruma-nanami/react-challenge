@@ -1,7 +1,7 @@
-import './index.css'
-import './App.css'
-import { AppRouter } from './router/Router'
-import { Header } from './components/templates/Header'
+import "./App.css";
+import { Header } from "./components/templates/Header";
+import "./index.css";
+import { AppRouter } from "./router/Router";
 
 function App() {
   return (
@@ -9,7 +9,7 @@ function App() {
       <Header />
       <AppRouter />
     </>
-  )
+  );
 }
 
-export default App
+export default App;

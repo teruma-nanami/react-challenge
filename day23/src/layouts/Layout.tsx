@@ -1,13 +1,16 @@
 import { Box, Button, Flex, Heading, Link } from "@chakra-ui/react";
 import { Outlet, Link as RouterLink } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
+import { logout } from "../app/features/authSlice";
+import { useAppDispatch, useAppSelector } from "../app/hooks";
 
 export default function Layout() {
-  const { user, logout } = useAuth();
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.auth.user);
 
   const handleLogout = () => {
-    logout();
+    dispatch(logout());
   };
+
   return (
     <Flex direction="column" minH="100vh">
       {/* ヘッダー */}
@@ -30,7 +33,6 @@ export default function Layout() {
               </>
             ) : (
               <>
-                {" "}
                 <Link as={RouterLink} to="/" mr={4}>
                   Home
                 </Link>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>POST API テスト</title>
+  </head>
+  <body>
+    <h1>POST API テスト</h1>
+    <form id="postForm">
+      <label for="name">名前:</label>
+      <input type="text" id="name" name="name" required /><br />
+      <label for="age">年齢:</label>
+      <input type="number" id="age" name="age" required /><br />
+      <button type="submit">送信</button>
+    </form>
+    <h2>レスポンス:</h2>
+    <pre id="response"></pre>
+    <script>
+      document
+        .getElementById("postForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const name = document.getElementById("name").value;
+          const age = document.getElementById("age").value;
+
+          const response = await fetch("/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ name, age }),
+          });
+
+          const result = await response.json();
+          document.getElementById("response").textContent = JSON.stringify(
+            result,
+            null,
+            2
+          );
+        });
+    </script>
+  </body>
+</html>
