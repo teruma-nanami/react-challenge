@@ -18,6 +18,8 @@ services:
     volumes:
       - ./src:/var/www/
     user: "${UID}:${GID}"
+    environment:
+      COMPOSER_CACHE_DIR: /tmp/composer-cache
 
   mysql:
     image: mysql:8.0
