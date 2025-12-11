@@ -39,7 +39,44 @@ class User extends Authenticatable
      * @var array<string, string>
      */
     protected $casts = [
-        'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    /**
+     * Relations
+     */
+    public function profile()
+    {
+        return $this->hasOne(UserProfile::class);
+    }
+
+    public function ledgers()
+    {
+        return $this->hasMany(Ledger::class);
+    }
+
+    public function entries()
+    {
+        return $this->hasMany(Entry::class);
+    }
+
+    public function preferences()
+    {
+        return $this->hasMany(UserPreference::class);
+    }
+
+    public function categories()
+    {
+        return $this->hasMany(Category::class);
+    }
+
+    public function taxRules()
+    {
+        return $this->hasMany(TaxRule::class);
+    }
+
+    public function taxFillingData()
+    {
+        return $this->hasMany(TaxFillingData::class);
+    }
 }
