@@ -75,8 +75,8 @@ class User extends Authenticatable
         return $this->hasMany(TaxRule::class);
     }
 
-    public function taxFillingData()
+    public function taxFilingData()
     {
-        return $this->hasMany(TaxFillingData::class);
+        return $this->hasMany(TaxFilingData::class);
     }
 }

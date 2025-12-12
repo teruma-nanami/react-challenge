@@ -1,8 +1,8 @@
-@extends('layouts.layout')
+@extends('layouts.app')
 
 @section('content')
   <div class="row justify-content-center">
-    <div class="col-md-6">
+    <div class="col-12 col-sm-10 col-md-8 col-lg-6">
       <div class="card">
         <div class="card-header">ログイン</div>
         <div class="card-body">
@@ -39,6 +39,9 @@
               <button type="submit" class="btn btn-primary">ログイン</button>
             </div>
           </form>
+          <div class="mt-3 text-center">
+            <small>アカウントをお持ちでないですか？ <a href="{{ route('register') }}">登録はこちら</a></small>
+          </div>
         </div>
       </div>
     </div>

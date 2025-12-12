@@ -1,8 +1,8 @@
-@extends('layouts.layout')
+@extends('layouts.app')
 
 @section('content')
   <div class="row justify-content-center">
-    <div class="col-md-6">
+    <div class="col-12 col-sm-10 col-md-8 col-lg-6">
       <div class="card">
         <div class="card-header">ユーザー登録</div>
         <div class="card-body">

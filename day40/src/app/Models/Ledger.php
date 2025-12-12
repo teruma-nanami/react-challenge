@@ -29,8 +29,8 @@ class Ledger extends Model
     return $this->hasMany(Entry::class, 'ledger_id');
   }
 
-  public function taxFillingData()
+  public function taxFilingData()
   {
-    return $this->hasOne(TaxFillingData::class, 'ledger_id');
+    return $this->hasOne(TaxFilingData::class, 'ledger_id');
   }
 }

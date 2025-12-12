@@ -14,13 +14,17 @@ return new class extends Migration
 		Schema::create('ledgers', function (Blueprint $table) {
 			$table->id();
 
-			// 外部キーと複合ユニークキーの定義 (ユーザーごとに年度は1つ)
+			// 帳簿はユーザー単位
 			$table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+
+			// 1ユーザーは年度ごとに1帳簿しか持てない
 			$table->unsignedSmallInteger('fiscal_year');
 			$table->unique(['user_id', 'fiscal_year']);
 
-			// 帳簿の期間とステータス
-			$table->string('status', 50)->default('Draft'); // Open, Closed
+			// Ledger状態（Draft または Locked）
+			$table->enum('status', ['Draft', 'Locked'])->default('Draft');
+
+			// ロック日時（提出 or 自動ロック時に設定）
 			$table->timestamp('locked_at')->nullable();
 
 			$table->timestamps();

@@ -1,93 +1,155 @@
-// usersテーブルの定義
+//////////////////////////////////////////////////////////
+// Users
+//////////////////////////////////////////////////////////
+
 Table users {
-  id bigint [pk, not null]
-  name varchar(255) [not null]
-  email varchar(255) [unique, not null]
-  password varchar(255) [not null]
-  remember_token varchar(100)
-  created_at timestamp [not null]
-  updated_at timestamp [not null]
+  id bigint [pk, increment]
+  name varchar
+  email varchar [unique]
+  password varchar
+  remember_token varchar
+  created_at timestamp
+  updated_at timestamp
 }
 
+//////////////////////////////////////////////////////////
+// User Profiles
+//////////////////////////////////////////////////////////
 
 Table user_profiles {
-  user_id bigint [pk, unique, not null, ref: > users.id]
-  app_role varchar(50) [not null] // 役割 (user, adminなど)
-  permissions json [not null] // その役割が持つ具体的な権限リスト (JSON)
-  tax_filing_method varchar(50) [not null, default: 'NA'] // 課税方式 (FullTax, NAなど)
-  invoice_enabled boolean [not null, default: false] // インボイス登録事業者か
-  invoice_number varchar(20) [unique] // 登録番号
-  business_name varchar(255)
-  first_login boolean [not null, default: true] // 初期設定完了フラグ
-  created_at timestamp [not null]
-  updated_at timestamp [not null]
+  user_id bigint [pk]
+  app_role varchar(50)
+  tax_filing_method varchar(50)
+  invoice_enabled boolean
+  invoice_number varchar(20) [unique]
+  business_name varchar
+  first_login boolean
+  created_at timestamp
+  updated_at timestamp
 }
+
+Ref: user_profiles.user_id > users.id
+
+//////////////////////////////////////////////////////////
+// Categories (Revenue / Expense)
+//////////////////////////////////////////////////////////
 
 Table categories {
-  id bigint [pk, not null]
-  category_name varchar(100) [unique, not null] // 勘定科目名
-  default_type varchar(20) [not null] // 取引の種別 (Revenue or Expense)
-  default_tax_category varchar(50) [not null] // デフォルト課税区分
-  is_user_selectable boolean [not null, default: true] // ユーザーが設定で表示/非表示を切り替えられるか
-  created_at timestamp [not null]
-  updated_at timestamp [not null]
+  id bigint [pk, increment]
+  category_name varchar(100) [unique]
+  default_type varchar(20) // Revenue | Expense
+  default_tax_category varchar(50)
+  created_at timestamp
+  updated_at timestamp
 }
 
-Table category_preferences {
-  user_id bigint [pk, not null, ref: > users.id]
-  category_id bigint [pk, not null, ref: > categories.id]
-  is_hidden boolean [not null, default: false] // 表示/非表示フラグ (TRUEで非表示)
-  created_at timestamp [not null]
-  updated_at timestamp [not null]
+//////////////////////////////////////////////////////////
+// User Preferences (hidden category settings)
+//////////////////////////////////////////////////////////
+
+Table user_preferences {
+  user_id bigint
+  category_id bigint
+  is_hidden boolean
+  created_at timestamp
+  updated_at timestamp
+
+  Indexes {
+    (user_id, category_id) [pk]
+  }
 }
 
-Table tax_rules {
-  id bigint [pk, not null]
-  rule_type varchar(50) [not null] // ルールの種類 (StandardTax, BasicDeductionなど)
-  value_numeric decimal(15, 4) [not null] // 数値として利用される値 (0.10, 480000)
-  fiscal_year integer [not null] // 適用開始年度
-  description text // 管理用説明
-  created_at timestamp [not null]
-  updated_at timestamp [not null]
-}
+Ref: user_preferences.user_id > users.id
+Ref: user_preferences.category_id > categories.id
+
+//////////////////////////////////////////////////////////
+// Ledgers (per fiscal year bookkeeping)
+//////////////////////////////////////////////////////////
 
 Table ledgers {
-  id bigint [pk, not null]
-  user_id bigint [not null, unique, ref: > users.id] // 帳簿の所有者
-  fiscal_year smallint [not null, unique] // 会計年度
-  status varchar(20) [not null, default: 'Draft'] // 帳簿の状態 (Draft, Locked)
+  id bigint [pk, increment]
+  user_id bigint
+  fiscal_year smallint
+  status varchar(50) // Draft | Open | Closed
   locked_at timestamp
-  created_at timestamp [not null]
-  updated_at timestamp [not null]
+  created_at timestamp
+  updated_at timestamp
+
+  Indexes {
+    (user_id, fiscal_year) [unique]
+  }
 }
+
+Ref: ledgers.user_id > users.id
+
+//////////////////////////////////////////////////////////
+// Tax Rules (tax rate & deduction rules by year)
+//////////////////////////////////////////////////////////
+
+Table tax_rules {
+  id bigint [pk, increment]
+  rule_type varchar(50)
+  value_numeric decimal(15,4)
+  fiscal_year smallint
+  created_at timestamp
+  updated_at timestamp
+
+  Indexes {
+    (rule_type, fiscal_year) [unique]
+  }
+}
+
+//////////////////////////////////////////////////////////
+// Entries (Income & Expense unified table)
+//////////////////////////////////////////////////////////
 
 Table entries {
-  id bigint [pk, not null]
-  user_id bigint [not null, ref: > users.id] // 取引の所有者 (監査・追跡用)
-  ledger_id bigint [not null, ref: > ledgers.id] // 会計年度の帳簿への参照
-  category_id bigint [not null, ref: > categories.id] // 勘定科目への参照
-  tax_rule_id bigint [not null, ref: > tax_rules.id] // 適用税率の値への参照
-  transaction_date timestamp [not null]
-  amount_inc_tax numeric(15, 2) [not null] // 税込金額
-  tax_category varchar(50) [not null] // 適用課税区分 (本則課税の集計用)
-  is_invoice_received boolean [not null, default: false] // インボイス受領フラグ
+  id bigint [pk, increment]
+  user_id bigint
+  ledger_id bigint
+  category_id bigint
+  tax_rule_id bigint
+
+  transaction_date timestamp
+  amount_inc_tax decimal(15,2)
+  tax_category varchar(50)
+  is_invoice_received boolean
+
   description text
-  partner_name varchar(255)
-  created_at timestamp [not null]
-  updated_at timestamp [not null]
+  partner_name varchar
+
+  created_at timestamp
+  updated_at timestamp
 }
 
+Ref: entries.user_id > users.id
+Ref: entries.ledger_id > ledgers.id
+Ref: entries.category_id > categories.id
+Ref: entries.tax_rule_id > tax_rules.id
+
+//////////////////////////////////////////////////////////
+// Tax Filing Data (確定申告書B入力）←今は仮のまま
+//////////////////////////////////////////////////////////
+
 Table tax_filing_data {
-  id bigint [pk, not null]
-  ledger_id bigint [unique, not null, ref: > ledgers.id] // 年度帳簿と1:1で接続 (UNIQUE)
-  user_id bigint [not null, ref: > users.id] // 所有者
-  salary_income numeric(15, 2) [not null, default: 0] // 給与所得の収入金額 (源泉徴収票)
-  salary_withholding_tax numeric(15, 2) [not null, default: 0] // 源泉徴収税額
-  life_insurance_ded numeric(15, 2) [not null, default: 0] // 生命保険料控除額
-  social_insurance_ded numeric(15, 2) [not null, default: 0] // 社会保険料控除額
-  medical_expense_ded numeric(15, 2) [not null, default: 0] // 医療費控除額
-  furusato_tax_ded numeric(15, 2) [not null, default: 0] // 寄附金控除額
-  dependency_deduction_count smallint [not null, default: 0] // 扶養親族の数
-  created_at timestamp [not null]
-  updated_at timestamp [not null]
+  id bigint [pk, increment]
+
+  user_id bigint
+  ledger_id bigint [unique]
+
+  // ★ 詳細項目は後で最終化するため、今は仮として残す
+  salary_income decimal(15,2)
+  salary_withholding_tax decimal(15,2)
+
+  life_insurance_ded decimal(15,2)
+  social_insurance_ded decimal(15,2)
+  medical_expense_ded decimal(15,2)
+  furusato_tax_ded decimal(15,2)
+  dependency_deduction_count smallint
+
+  created_at timestamp
+  updated_at timestamp
 }
+
+Ref: tax_filing_data.user_id > users.id
+Ref: tax_filing_data.ledger_id > ledgers.id
