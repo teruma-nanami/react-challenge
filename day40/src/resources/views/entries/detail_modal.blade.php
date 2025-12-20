@@ -1,105 +1,137 @@
 @extends('layouts.app')
 
 @section('content')
-  <div class="d-flex justify-content-between align-items-start mb-3">
-    <div>
-      <h1 class="h3 mb-1">Entry Detail</h1>
-      <p class="text-muted mb-0">Review the posting, supporting documents, and audit trail for entry JE-2451.</p>
-    </div>
-    <div class="btn-group">
-      <a href="{{ route('entries.edit', 2451) }}" class="btn btn-outline-secondary">Edit</a>
-      <button class="btn btn-outline-secondary">Download PDF</button>
-    </div>
-  </div>
+  @php
+    /**
+     * ------------------------------------------------------------
+     * プロトタイプ用ダミーデータ
+     * ------------------------------------------------------------
+     */
 
-  <div class="row g-3 mb-4">
-    <div class="col-lg-4">
-      <div class="card h-100">
-        <div class="card-header">Summary</div>
-        <div class="card-body">
-          <p class="mb-1"><strong>Date:</strong> 2025-04-18</p>
-          <p class="mb-1"><strong>Prepared by:</strong> Kenji Tanaka</p>
-          <p class="mb-1"><strong>Reviewed by:</strong> Mai Sato</p>
-          <p class="mb-1"><strong>Status:</strong> <span class="badge text-bg-success">Posted</span></p>
-          <p class="mb-0"><strong>Notes:</strong> Rent payment for HQ office.</p>
-        </div>
-      </div>
-    </div>
-    <div class="col-lg-8">
-      <div class="card h-100">
-        <div class="card-header">Line items</div>
-        <div class="table-responsive">
-          <table class="table table-striped mb-0">
-            <thead class="table-light">
-              <tr>
-                <th scope="col">Account</th>
-                <th scope="col">Ledger</th>
-                <th scope="col" class="text-end">Debit</th>
-                <th scope="col" class="text-end">Credit</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Rent expense</td>
-                <td>Operating expenses</td>
-                <td class="text-end">120,000</td>
-                <td class="text-end">0</td>
-              </tr>
-              <tr>
-                <td>Cash</td>
-                <td>Cash and cash equivalents</td>
-                <td class="text-end">0</td>
-                <td class="text-end">120,000</td>
-              </tr>
-            </tbody>
-            <tfoot class="table-light">
-              <tr>
-                <th colspan="2" class="text-end">Totals</th>
-                <th class="text-end">120,000</th>
-                <th class="text-end">120,000</th>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
+    if (!isset($user)) {
+        $user = (object) [
+            'profile' => (object) [
+                'invoice_enabled' => false,
+            ],
+        ];
+    }
 
-  <div class="row g-3">
-    <div class="col-lg-6">
-      <div class="card h-100">
-        <div class="card-header">Attachments</div>
-        <div class="card-body">
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              Lease-agreement.pdf
-              <button class="btn btn-sm btn-outline-secondary">Open</button>
-            </li>
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              Bank-statement-apr.pdf
-              <button class="btn btn-sm btn-outline-secondary">Open</button>
-            </li>
-          </ul>
+    if (!isset($entry)) {
+        $entry = (object) [
+            'id' => 1,
+            'transaction_date' => '2026-01-15',
+            'category_name' => '通信費',
+            'tax_category' => 'standard', // standard / reduced / non-taxable
+            'invoice_number' => null,
+            'amount_inc_tax' => 1580,
+            'description' => 'ダミーの通信費です（プロトタイプ用）',
+            'is_capitalized' => false,
+            'created_at' => '2026-01-15 10:00:00',
+            'updated_at' => '2026-01-16 12:00:00',
+        ];
+    }
+
+    // 税区分の表示名
+    $taxLabels = [
+        'standard' => '標準税率（10%）',
+        'reduced' => '軽減税率（8%）',
+        'non-taxable' => '非課税',
+    ];
+  @endphp
+
+
+  <div class="container py-4">
+
+    <h3 class="fw-bold mb-4">取引の詳細</h3>
+
+    <div class="card">
+      <div class="card-body">
+
+        <h5 class="fw-semibold mb-3">{{ $entry->category_name }}（ID: {{ $entry->id }}）</h5>
+
+        {{-- 取引基本情報 --}}
+        <table class="table">
+          <tbody>
+            <tr>
+              <th style="width: 200px;">日付</th>
+              <td>{{ $entry->transaction_date }}</td>
+            </tr>
+
+            <tr>
+              <th>科目名</th>
+              <td>{{ $entry->category_name }}</td>
+            </tr>
+
+            @if ($user->profile->invoice_enabled)
+              <tr>
+                <th>税区分</th>
+                <td>{{ $taxLabels[$entry->tax_category] ?? '-' }}</td>
+              </tr>
+
+              <tr>
+                <th>インボイス登録番号</th>
+                <td>{{ $entry->invoice_number ?? '（未入力）' }}</td>
+              </tr>
+            @endif
+
+            <tr>
+              <th>金額（税込）</th>
+              <td>{{ number_format($entry->amount_inc_tax) }} 円</td>
+            </tr>
+
+            <tr>
+              <th>摘要</th>
+              <td>{{ $entry->description ?: '（なし）' }}</td>
+            </tr>
+
+            <tr>
+              <th>固定資産扱い</th>
+              <td>
+                @if ($entry->is_capitalized)
+                  <span class="badge bg-danger">10万円以上（減価償却対象）</span>
+                @else
+                  <span class="badge bg-secondary">対象外</span>
+                @endif
+              </td>
+            </tr>
+
+            <tr>
+              <th>登録日時</th>
+              <td>{{ $entry->created_at }}</td>
+            </tr>
+
+            <tr>
+              <th>更新日時</th>
+              <td>{{ $entry->updated_at }}</td>
+            </tr>
+
+          </tbody>
+        </table>
+
+
+        {{-- ボタン群 --}}
+        <div class="d-flex gap-2 mt-4">
+
+          <a href="{{ route('entries.edit', $entry->id) }}" class="btn btn-primary">
+            編集する
+          </a>
+
+          <form method="POST" action="{{ route('entries.destroy', $entry->id) }}">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="btn btn-outline-danger">
+              削除する
+            </button>
+          </form>
+
+          <a href="{{ route('entries.index') }}" class="btn btn-outline-secondary ms-auto">
+            一覧に戻る
+          </a>
+
         </div>
+
       </div>
     </div>
-    <div class="col-lg-6">
-      <div class="card h-100">
-        <div class="card-header">Audit trail</div>
-        <div class="card-body">
-          <ul class="timeline list-unstyled mb-0">
-            <li class="mb-3">
-              <p class="mb-0"><strong>2025-04-18 09:10</strong> &ndash; Entry posted by Kenji Tanaka</p>
-            </li>
-            <li class="mb-3">
-              <p class="mb-0"><strong>2025-04-17 20:55</strong> &ndash; Reviewed and approved by Mai Sato</p>
-            </li>
-            <li>
-              <p class="mb-0"><strong>2025-04-17 20:10</strong> &ndash; Draft created by Kenji Tanaka</p>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
+
   </div>
 @endsection

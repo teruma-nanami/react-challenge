@@ -1,73 +1,98 @@
 @extends('layouts.app')
 
 @section('content')
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-      <h1 class="h3 mb-1">Capitalized Entries</h1>
-      <p class="text-muted mb-0">Track items that were capitalized to the balance sheet rather than expensed.</p>
-    </div>
-    <button class="btn btn-outline-secondary">Export asset register</button>
+
+  @php
+    /**
+     * ------------------------------------------------------------
+     * プロトタイプ向けダミーデータ
+     * ------------------------------------------------------------
+     */
+
+    // 償却期間の候補（白色申告対象の少額減価償却を想定）
+    $depreciation_years = [
+        1 => '1年',
+        2 => '2年',
+        3 => '3年（一般的）',
+        4 => '4年',
+        5 => '5年',
+    ];
+  @endphp
+
+
+  <div class="container py-4">
+
+    <h3 class="fw-bold mb-4">固定資産の登録（10万円以上）</h3>
+
+    <p class="text-muted">
+      「10万円以上」の購入は経費にできず、減価償却が必要となります。
+      このページでは、固定資産として登録し、年末に減価償却費を自動計算するための情報を入力します。
+    </p>
+
+    {{-- エラーメッセージ --}}
+    @if ($errors->any())
+      <div class="alert alert-danger">
+        <ul class="mb-0">
+          @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+          @endforeach
+        </ul>
+      </div>
+    @endif
+
+
+    {{-- 固定資産登録フォーム --}}
+    <form method="POST" action="{{ route('entries.capitalized.store') }}">
+      @csrf
+
+      {{-- 購入日 --}}
+      <div class="mb-3">
+        <label for="purchase_date" class="form-label fw-semibold">購入日</label>
+        <input type="date" id="purchase_date" name="purchase_date" class="form-control"
+          value="{{ old('purchase_date') }}" required>
+      </div>
+
+      {{-- 資産名 --}}
+      <div class="mb-3">
+        <label for="asset_name" class="form-label fw-semibold">資産名</label>
+        <input type="text" id="asset_name" name="asset_name" class="form-control" value="{{ old('asset_name') }}"
+          placeholder="例：パソコン、業務用カメラ など" required>
+      </div>
+
+      {{-- 金額（税込） --}}
+      <div class="mb-3">
+        <label for="amount_inc_tax" class="form-label fw-semibold">金額（税込）</label>
+        <input type="number" id="amount_inc_tax" name="amount_inc_tax" class="form-control"
+          value="{{ old('amount_inc_tax') }}" required>
+      </div>
+
+      {{-- 償却期間 --}}
+      <div class="mb-3">
+        <label for="depreciation_years" class="form-label fw-semibold">償却期間</label>
+        <select id="depreciation_years" name="depreciation_years" class="form-select" required>
+          <option value="" disabled selected>選択してください</option>
+          @foreach ($depreciation_years as $year => $label)
+            <option value="{{ $year }}">{{ $label }}</option>
+          @endforeach
+        </select>
+      </div>
+
+      {{-- 摘要（任意） --}}
+      <div class="mb-3">
+        <label for="description" class="form-label fw-semibold">摘要（任意）</label>
+        <textarea id="description" name="description" class="form-control" rows="3" placeholder="例：業務用として購入">{{ old('description') }}</textarea>
+      </div>
+
+
+      {{-- ボタン --}}
+      <button type="submit" class="btn btn-success px-4">固定資産として登録する</button>
+
+      <a href="{{ route('entries.index') }}" class="btn btn-outline-secondary ms-2">
+        戻る
+      </a>
+
+    </form>
+
   </div>
 
-  <div class="card mb-4">
-    <div class="card-body d-flex justify-content-around text-center">
-      <div>
-        <p class="text-muted mb-1">Total assets capitalized this year</p>
-        <p class="h4 mb-0">4,320,000</p>
-      </div>
-      <div>
-        <p class="text-muted mb-1">Assets pending review</p>
-        <p class="h4 mb-0">3</p>
-      </div>
-      <div>
-        <p class="text-muted mb-1">Accumulated depreciation</p>
-        <p class="h4 mb-0">-1,140,500</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="table-responsive">
-    <table class="table align-middle">
-      <thead class="table-light">
-        <tr>
-          <th scope="col">Asset</th>
-          <th scope="col">Category</th>
-          <th scope="col">Capitalized on</th>
-          <th scope="col" class="text-end">Amount</th>
-          <th scope="col">Useful life</th>
-          <th scope="col" class="text-center">Status</th>
-          <th scope="col" class="text-end"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Factory robot line</td>
-          <td>Machinery</td>
-          <td>2025-03-12</td>
-          <td class="text-end">2,800,000</td>
-          <td>7 years</td>
-          <td class="text-center"><span class="badge text-bg-success">Depreciating</span></td>
-          <td class="text-end"><button class="btn btn-sm btn-outline-secondary">View</button></td>
-        </tr>
-        <tr>
-          <td>Office renovation</td>
-          <td>Leasehold improvements</td>
-          <td>2025-02-02</td>
-          <td class="text-end">900,000</td>
-          <td>5 years</td>
-          <td class="text-center"><span class="badge text-bg-warning text-dark">Pending</span></td>
-          <td class="text-end"><button class="btn btn-sm btn-outline-secondary">Review</button></td>
-        </tr>
-        <tr>
-          <td>Company vehicles</td>
-          <td>Vehicles</td>
-          <td>2025-01-18</td>
-          <td class="text-end">620,000</td>
-          <td>4 years</td>
-          <td class="text-center"><span class="badge text-bg-success">Depreciating</span></td>
-          <td class="text-end"><button class="btn btn-sm btn-outline-secondary">View</button></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
 @endsection

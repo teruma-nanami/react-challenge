@@ -1,87 +1,183 @@
 @extends('layouts.app')
 
 @section('content')
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-      <h1 class="h3 mb-1">Deduction Input</h1>
-      <p class="text-muted mb-0">Enter eligible deductions to reduce taxable income for this filing.</p>
-    </div>
-    <a href="{{ route('filing.entries_summary') }}" class="btn btn-outline-secondary">View supporting entries</a>
-  </div>
+  @php
+    /**
+     * ------------------------------------------------------------
+     * プロトタイプ用ダミーデータ（表示専用）
+     * 本番では Controller から $deductions を渡します
+     * ------------------------------------------------------------
+     */
+    if (!isset($deductions)) {
+        $deductions = (object) [
+            'salary_income' => 0,
+            'salary_withholding_tax' => 0,
+            'social_insurance_ded' => 0,
+            'life_insurance_gen' => 0,
+            'life_insurance_med' => 0,
+            'life_insurance_annuity' => 0,
+            'medical_expense_ded' => 0,
+            'furusato_tax_ded' => 0,
+            'dependency_deduction_count' => 0,
+            'has_spouse' => false,
+        ];
+    }
+  @endphp
 
-  <form class="card">
-    <div class="card-body">
-      <div class="row g-3">
-        <div class="col-md-6">
-          <label for="deductionType" class="form-label">Deduction type</label>
-          <select id="deductionType" class="form-select">
-            <option>Research and development</option>
-            <option>Depreciation</option>
-            <option>Charitable contributions</option>
-            <option>Loss carryforward</option>
-          </select>
+
+  <div class="container py-4">
+
+    <h3 class="fw-bold mb-4">控除の入力</h3>
+
+    <p class="text-muted mb-3">
+      厳選徴収票や控除証明書をもとに、申告に必要な控除額を入力してください。
+      ※ プロトタイプ版のため、このページは保存を行いません。
+    </p>
+
+
+    {{-- ▼▼ 給与所得（厳選徴収票） ▼▼ --}}
+    <div class="card mb-4">
+      <div class="card-header fw-semibold">給与所得（厳選徴収票）</div>
+      <div class="card-body">
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">給与所得</label>
+          <input type="number" name="salary_income" class="form-control" value="{{ $deductions->salary_income }}"
+            placeholder="例：3,500,000">
         </div>
-        <div class="col-md-3">
-          <label for="deductionAmount" class="form-label">Amount</label>
-          <input type="number" id="deductionAmount" class="form-control" value="320000">
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">源泉徴収税額</label>
+          <input type="number" name="salary_withholding_tax" class="form-control"
+            value="{{ $deductions->salary_withholding_tax }}" placeholder="例：120,000">
         </div>
-        <div class="col-md-3">
-          <label for="deductionJurisdiction" class="form-label">Jurisdiction</label>
-          <select id="deductionJurisdiction" class="form-select">
-            <option>National</option>
-            <option>Prefectural</option>
-            <option>Municipal</option>
-          </select>
-        </div>
-        <div class="col-12">
-          <label for="deductionNotes" class="form-label">Notes</label>
-          <textarea id="deductionNotes" class="form-control" rows="3"
-            placeholder="Provide rationale and source documentation."></textarea>
-        </div>
+
       </div>
     </div>
-    <div class="card-footer d-flex justify-content-end gap-2">
-      <button type="button" class="btn btn-outline-secondary">Cancel</button>
-      <button type="submit" class="btn btn-primary">Save deduction</button>
-    </div>
-  </form>
 
-  <div class="card mt-4">
-    <div class="card-header">Recorded deductions</div>
-    <div class="table-responsive">
-      <table class="table table-striped mb-0">
-        <thead class="table-light">
-          <tr>
-            <th scope="col">Type</th>
-            <th scope="col">Jurisdiction</th>
-            <th scope="col" class="text-end">Amount</th>
-            <th scope="col">Notes</th>
-            <th scope="col" class="text-end">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Research and development</td>
-            <td>National</td>
-            <td class="text-end">320,000</td>
-            <td>Prototype device materials for FY2025 program.</td>
-            <td class="text-end">
-              <button class="btn btn-sm btn-outline-secondary">Edit</button>
-              <button class="btn btn-sm btn-outline-danger">Remove</button>
-            </td>
-          </tr>
-          <tr>
-            <td>Charitable contributions</td>
-            <td>Prefectural</td>
-            <td class="text-end">120,000</td>
-            <td>Approved donation to Osaka STEM foundation.</td>
-            <td class="text-end">
-              <button class="btn btn-sm btn-outline-secondary">Edit</button>
-              <button class="btn btn-sm btn-outline-danger">Remove</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+
+
+    {{-- ▼▼ 社会保険料控除 ▼▼ --}}
+    <div class="card mb-4">
+      <div class="card-header fw-semibold">社会保険料控除</div>
+      <div class="card-body">
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">社会保険料（国民年金含む）</label>
+          <input type="number" name="social_insurance_ded" class="form-control"
+            value="{{ $deductions->social_insurance_ded }}" placeholder="例：250,000">
+        </div>
+
+      </div>
     </div>
+
+
+
+    {{-- ▼▼ 生命保険料控除（3区分） ▼▼ --}}
+    <div class="card mb-4">
+      <div class="card-header fw-semibold">生命保険料控除（3区分）</div>
+      <div class="card-body">
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">一般生命保険料</label>
+          <input type="number" name="life_insurance_gen" class="form-control"
+            value="{{ $deductions->life_insurance_gen }}">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">介護医療保険料</label>
+          <input type="number" name="life_insurance_med" class="form-control"
+            value="{{ $deductions->life_insurance_med }}">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">個人年金保険料</label>
+          <input type="number" name="life_insurance_annuity" class="form-control"
+            value="{{ $deductions->life_insurance_annuity }}">
+        </div>
+
+      </div>
+    </div>
+
+
+
+    {{-- ▼▼ 医療費控除 ▼▼ --}}
+    <div class="card mb-4">
+      <div class="card-header fw-semibold">医療費控除</div>
+      <div class="card-body">
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">医療費控除額</label>
+          <input type="number" name="medical_expense_ded" class="form-control"
+            value="{{ $deductions->medical_expense_ded }}">
+        </div>
+
+      </div>
+    </div>
+
+
+
+    {{-- ▼▼ 寄附金控除（ふるさと納税） ▼▼ --}}
+    <div class="card mb-4">
+      <div class="card-header fw-semibold">寄附金控除（ふるさと納税）</div>
+      <div class="card-body">
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">ふるさと納税額</label>
+          <input type="number" name="furusato_tax_ded" class="form-control" value="{{ $deductions->furusato_tax_ded }}">
+        </div>
+
+      </div>
+    </div>
+
+
+
+    {{-- ▼▼ 扶養控除 ▼▼ --}}
+    <div class="card mb-4">
+      <div class="card-header fw-semibold">扶養控除</div>
+      <div class="card-body">
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">扶養人数</label>
+          <input type="number" name="dependency_deduction_count" class="form-control"
+            value="{{ $deductions->dependency_deduction_count }}" min="0">
+        </div>
+
+      </div>
+    </div>
+
+
+
+    {{-- ▼▼ 配偶者控除 ▼▼ --}}
+    <div class="card mb-4">
+      <div class="card-header fw-semibold">配偶者控除</div>
+      <div class="card-body">
+
+        <div class="form-check mb-2">
+          <input type="checkbox" class="form-check-input" id="has_spouse" name="has_spouse" value="1"
+            @checked($deductions->has_spouse)>
+          <label for="has_spouse" class="form-check-label">
+            配偶者がいます
+          </label>
+        </div>
+
+        <p class="text-muted small">
+          ※ 配偶者控除の細かい判定は後続の計算ロジックで自動処理されます。
+        </p>
+
+      </div>
+    </div>
+
+
+
+    {{-- ▼▼ 保存ボタン（非機能） ▼▼ --}}
+    <button type="button" class="btn btn-success" disabled>
+      保存（プロトタイプでは無効）
+    </button>
+
+    <a href="{{ route('filing.annual_summary') }}" class="btn btn-outline-secondary ms-2">
+      年間損益に戻る
+    </a>
+
   </div>
 @endsection

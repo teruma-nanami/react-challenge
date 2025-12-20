@@ -1,99 +1,106 @@
 @extends('layouts.app')
 
 @section('content')
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-      <h1 class="h3 mb-1">Depreciable Assets</h1>
-      <p class="text-muted mb-0">View each fixed asset, its book value, and accumulated depreciation.</p>
-    </div>
-    <div class="d-flex gap-2">
-      <button class="btn btn-outline-secondary">Import CSV</button>
-      <button class="btn btn-primary">Add asset</button>
-    </div>
-  </div>
+  <div class="container py-4">
 
-  <div class="card mb-4">
-    <div class="card-body">
-      <div class="row g-3">
-        <div class="col-md-3">
-          <label class="form-label" for="filterClass">Asset class</label>
-          <select id="filterClass" class="form-select">
-            <option selected>All classes</option>
-            <option>Machinery</option>
-            <option>Vehicles</option>
-            <option>Leasehold improvements</option>
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label" for="filterLocation">Location</label>
-          <select id="filterLocation" class="form-select">
-            <option selected>All locations</option>
-            <option>Tokyo HQ</option>
-            <option>Osaka Plant</option>
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label" for="filterStatus">Status</label>
-          <select id="filterStatus" class="form-select">
-            <option selected>Any</option>
-            <option>Depreciating</option>
-            <option>Pending</option>
-            <option>Disposed</option>
-          </select>
-        </div>
-        <div class="col-md-3 d-flex align-items-end">
-          <button class="btn btn-outline-primary w-100" type="button">Apply filters</button>
-        </div>
+    <h3 class="fw-bold mb-4">原価消却資産一覧</h3>
+
+    <p class="text-muted">
+      10万円以上の資産で、経費計上から除外されたものが表示されます。
+      償却方法の設定は「原価消却ウィザード」から行えます。
+    </p>
+
+    {{-- プロトタイプ用ダミーデータ --}}
+    @php
+      if (!isset($assets)) {
+          $assets = [
+              (object) [
+                  'id' => 1,
+                  'transaction_date' => '2024-03-12',
+                  'description' => 'ノートPC（MacBook Air）',
+                  'amount_inc_tax' => 165000,
+                  'useful_life' => 3,
+                  'remaining_amount' => 110000,
+              ],
+              (object) [
+                  'id' => 2,
+                  'transaction_date' => '2024-06-22',
+                  'description' => '業務用モニター',
+                  'amount_inc_tax' => 55000,
+                  'useful_life' => null,
+                  'remaining_amount' => null,
+              ],
+          ];
+      }
+    @endphp
+
+
+    <div class="card">
+      <div class="card-header fw-semibold">
+        資産一覧
+      </div>
+
+      <div class="card-body p-0">
+
+        <table class="table mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>購入日</th>
+              <th>内容</th>
+              <th class="text-end">金額（税込）</th>
+              <th class="text-center">償却年数</th>
+              <th class="text-center">未償却残高</th>
+              <th></th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @foreach ($assets as $asset)
+              <tr>
+                <td>{{ $asset->transaction_date }}</td>
+
+                <td>{{ $asset->description }}</td>
+
+                <td class="text-end">
+                  {{ number_format($asset->amount_inc_tax) }} 円
+                </td>
+
+                <td class="text-center">
+                  @if ($asset->useful_life)
+                    {{ $asset->useful_life }} 年
+                  @else
+                    <span class="text-muted">未設定</span>
+                  @endif
+                </td>
+
+                <td class="text-center">
+                  @if ($asset->remaining_amount)
+                    {{ number_format($asset->remaining_amount) }} 円
+                  @else
+                    <span class="text-muted">---</span>
+                  @endif
+                </td>
+
+                <td class="text-end">
+                  <a href="{{ route('depreciation.wizard') }}?id={{ $asset->id }}"
+                    class="btn btn-sm btn-outline-primary">
+                    設定
+                  </a>
+                </td>
+              </tr>
+            @endforeach
+          </tbody>
+
+        </table>
+
       </div>
     </div>
-  </div>
 
-  <div class="table-responsive">
-    <table class="table table-striped align-middle">
-      <thead class="table-light">
-        <tr>
-          <th scope="col">Asset</th>
-          <th scope="col">Class</th>
-          <th scope="col">In-service date</th>
-          <th scope="col" class="text-end">Cost</th>
-          <th scope="col" class="text-end">Accumulated</th>
-          <th scope="col" class="text-end">Net book</th>
-          <th scope="col" class="text-center">Status</th>
-          <th scope="col" class="text-end"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Factory robot line</td>
-          <td>Machinery</td>
-          <td>2025-03-12</td>
-          <td class="text-end">2,800,000</td>
-          <td class="text-end">560,000</td>
-          <td class="text-end">2,240,000</td>
-          <td class="text-center"><span class="badge text-bg-success">Depreciating</span></td>
-          <td class="text-end"><button class="btn btn-sm btn-outline-secondary">Schedule</button></td>
-        </tr>
-        <tr>
-          <td>Office renovation</td>
-          <td>Leasehold improvements</td>
-          <td>2025-02-02</td>
-          <td class="text-end">900,000</td>
-          <td class="text-end">75,000</td>
-          <td class="text-end">825,000</td>
-          <td class="text-center"><span class="badge text-bg-warning text-dark">Pending</span></td>
-          <td class="text-end"><button class="btn btn-sm btn-outline-primary">Complete</button></td>
-        </tr>
-        <tr>
-          <td>Company vehicles</td>
-          <td>Vehicles</td>
-          <td>2025-01-18</td>
-          <td class="text-end">620,000</td>
-          <td class="text-end">155,000</td>
-          <td class="text-end">465,000</td>
-          <td class="text-center"><span class="badge text-bg-success">Depreciating</span></td>
-          <td class="text-end"><button class="btn btn-sm btn-outline-secondary">Schedule</button></td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="mt-3">
+      <a href="{{ route('dashboard.home') }}" class="btn btn-outline-secondary">
+        ダッシュボードに戻る
+      </a>
+    </div>
+
   </div>
 @endsection

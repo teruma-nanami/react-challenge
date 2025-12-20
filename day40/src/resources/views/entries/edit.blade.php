@@ -1,129 +1,109 @@
 @extends('layouts.app')
 
 @section('content')
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-      <h1 class="h3 mb-1">Edit Entry</h1>
-      <p class="text-muted mb-0">Make adjustments to an existing journal entry. Locked periods prevent posting new totals.
-      </p>
-    </div>
-    <div class="d-flex gap-2">
-      <a href="{{ route('entries.index') }}" class="btn btn-outline-secondary">Back</a>
-      <button class="btn btn-outline-danger">Void entry</button>
-    </div>
+
+  @php
+    // ★ コントローラー未実装時の暫定対応（ダミーデータを定義）
+
+    // $entry が渡っていない場合のみダミーをセット
+    if (!isset($entry)) {
+        $entry = (object) [
+            'id' => 1,
+            'transaction_date' => '2026-01-15',
+            'category_id' => 1,
+            'amount_inc_tax' => 1500,
+            'description' => 'ダミーの取引です（コントローラー未接続）',
+            'is_invoice_received' => false,
+        ];
+    }
+
+    // $categories が渡っていない場合のみダミーをセット
+    if (!isset($categories)) {
+        $categories = [
+            (object) ['id' => 1, 'category_name' => '通信費'],
+            (object) ['id' => 2, 'category_name' => '旅費交通費'],
+            (object) ['id' => 3, 'category_name' => '消耗品費'],
+        ];
+    }
+  @endphp
+
+  <div class="container py-4">
+
+    <h3 class="fw-bold mb-4">取引の編集</h3>
+
+    {{-- エラーメッセージ --}}
+    @if ($errors->any())
+      <div class="alert alert-danger">
+        <ul class="mb-0">
+          @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+          @endforeach
+        </ul>
+      </div>
+    @endif
+
+    {{-- 更新フォーム --}}
+    <form method="POST" action="{{ route('entries.update', $entry->id) }}">
+      @csrf
+      @method('PUT')
+
+      {{-- 日付 --}}
+      <div class="mb-3">
+        <label for="transaction_date" class="form-label fw-semibold">日付</label>
+        <input type="date" id="transaction_date" name="transaction_date" class="form-control"
+          value="{{ old('transaction_date', $entry->transaction_date) }}" required>
+      </div>
+
+      {{-- 科目 --}}
+      <div class="mb-3">
+        <label for="category_id" class="form-label fw-semibold">科目</label>
+        <select name="category_id" id="category_id" class="form-select" required>
+          @foreach ($categories as $category)
+            <option value="{{ $category->id }}" @selected(old('category_id', $entry->category_id) == $category->id)>
+              {{ $category->category_name }}
+            </option>
+          @endforeach
+        </select>
+      </div>
+
+      {{-- 金額（税込） --}}
+      <div class="mb-3">
+        <label for="amount_inc_tax" class="form-label fw-semibold">金額（税込）</label>
+        <input type="number" id="amount_inc_tax" name="amount_inc_tax" class="form-control"
+          value="{{ old('amount_inc_tax', $entry->amount_inc_tax) }}" step="1" required>
+      </div>
+
+      {{-- 摘要 --}}
+      <div class="mb-3">
+        <label for="description" class="form-label fw-semibold">摘要（任意）</label>
+        <textarea id="description" name="description" class="form-control" rows="3">{{ old('description', $entry->description) }}</textarea>
+      </div>
+
+      {{-- インボイス受領フラグ --}}
+      <div class="form-check mb-4">
+        <input type="checkbox" id="is_invoice_received" name="is_invoice_received" class="form-check-input" value="1"
+          @checked(old('is_invoice_received', $entry->is_invoice_received))>
+        <label for="is_invoice_received" class="form-check-label">
+          インボイスを受領済み
+        </label>
+      </div>
+
+      {{-- ボタン群 --}}
+      <div class="d-flex align-items-center gap-2">
+        <button type="submit" class="btn btn-primary">
+          保存する
+        </button>
+    </form>
+
+    {{-- 削除用フォーム（別フォーム・ネストしない） --}}
+    <form method="POST" action="{{ route('entries.destroy', $entry->id) }}">
+      @csrf
+      @method('DELETE')
+      <button type="submit" class="btn btn-outline-danger">
+        削除する
+      </button>
+    </form>
   </div>
 
-  <div class="alert alert-warning" role="alert">
-    This entry affects a period under review. Changes will trigger approval from the accounting manager.
   </div>
-
-  <form class="card">
-    <div class="card-body">
-      <div class="row g-3">
-        <div class="col-md-3">
-          <label for="editEntryDate" class="form-label">Entry date</label>
-          <input type="date" id="editEntryDate" class="form-control" value="2025-04-15">
-        </div>
-        <div class="col-md-3">
-          <label for="editJournal" class="form-label">Journal</label>
-          <select id="editJournal" class="form-select">
-            <option selected>General journal</option>
-            <option>Sales journal</option>
-          </select>
-        </div>
-        <div class="col-md-6">
-          <label for="editDescription" class="form-label">Description</label>
-          <input type="text" id="editDescription" class="form-control" value="Payroll accrual adjustment">
-        </div>
-        <div class="col-md-4">
-          <label for="editReviewer" class="form-label">Reviewer</label>
-          <select id="editReviewer" class="form-select">
-            <option>Mai Sato</option>
-            <option>Kenji Tanaka</option>
-          </select>
-        </div>
-        <div class="col-md-4">
-          <label for="editAttachments" class="form-label">Supporting doc URL</label>
-          <input type="url" id="editAttachments" class="form-control" placeholder="https://...">
-        </div>
-        <div class="col-md-4">
-          <label for="editReference" class="form-label">Reference number</label>
-          <input type="text" id="editReference" class="form-control" value="Approval-3098">
-        </div>
-      </div>
-    </div>
-
-    <div class="table-responsive">
-      <table class="table table-sm table-striped mb-0">
-        <thead class="table-light">
-          <tr>
-            <th scope="col">Account</th>
-            <th scope="col">Ledger</th>
-            <th scope="col" class="text-end">Debit</th>
-            <th scope="col" class="text-end">Credit</th>
-            <th scope="col" class="text-center">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><input type="text" class="form-control" value="Salaries payable"></td>
-            <td>
-              <select class="form-select">
-                <option>Payroll</option>
-                <option>Operations</option>
-              </select>
-            </td>
-            <td class="text-end">
-              <input type="number" class="form-control text-end" value="980000">
-            </td>
-            <td class="text-end">
-              <input type="number" class="form-control text-end" value="0">
-            </td>
-            <td class="text-center">
-              <button type="button" class="btn btn-sm btn-outline-secondary">Split</button>
-            </td>
-          </tr>
-          <tr>
-            <td><input type="text" class="form-control" value="Payroll expense"></td>
-            <td>
-              <select class="form-select">
-                <option>Payroll</option>
-                <option>Administrative</option>
-              </select>
-            </td>
-            <td class="text-end">
-              <input type="number" class="form-control text-end" value="0">
-            </td>
-            <td class="text-end">
-              <input type="number" class="form-control text-end" value="980000">
-            </td>
-            <td class="text-center">
-              <button type="button" class="btn btn-sm btn-outline-secondary">Split</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="card-body border-top">
-      <div class="row g-3">
-        <div class="col-md-8">
-          <label for="editNotes" class="form-label">Internal notes</label>
-          <textarea id="editNotes" class="form-control" rows="3" placeholder="Summarize why this change is needed."></textarea>
-        </div>
-        <div class="col-md-4">
-          <div class="border rounded p-3 bg-light">
-            <p class="mb-1">Debits: <strong>980,000</strong></p>
-            <p class="mb-1">Credits: <strong>980,000</strong></p>
-            <p class="mb-0 text-success">Balanced</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card-footer d-flex justify-content-end gap-2">
-      <button type="button" class="btn btn-outline-secondary">Save draft</button>
-      <button type="submit" class="btn btn-primary">Submit for approval</button>
-    </div>
-  </form>
 @endsection

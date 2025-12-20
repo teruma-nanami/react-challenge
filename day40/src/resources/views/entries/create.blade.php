@@ -1,121 +1,136 @@
 @extends('layouts.app')
 
 @section('content')
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-      <h1 class="h3 mb-1">Create Entry</h1>
-      <p class="text-muted mb-0">Record a new journal entry by providing line items and supporting details.</p>
-    </div>
-    <a href="{{ route('entries.index') }}" class="btn btn-outline-secondary">Back to entries</a>
-  </div>
 
-  <form class="card">
-    <div class="card-body">
-      <div class="row g-3">
-        <div class="col-md-3">
-          <label for="entryDate" class="form-label">Entry date</label>
-          <input type="date" class="form-control" id="entryDate" value="2025-04-18">
+  @php
+    /**
+     * ------------------------------------------------------------
+     * プロトタイプ用ダミーデータ
+     * ------------------------------------------------------------
+     */
+
+    // ① ユーザー情報（インボイス事業者かどうか）
+    // コントローラ未設定でもエラーが出ないようにする
+    if (!isset($user)) {
+        $user = (object) [
+            'profile' => (object) [
+                // ← ここを true にすると「インボイス対応フォーム」が表示される
+                'invoice_enabled' => true,
+            ],
+        ];
+    }
+
+    // ② カテゴリデータ（未設定のときに使用）
+    if (!isset($categories)) {
+        $categories = [
+            (object) ['id' => 1, 'category_name' => '通信費'],
+            (object) ['id' => 2, 'category_name' => '旅費交通費'],
+            (object) ['id' => 3, 'category_name' => '消耗品費'],
+        ];
+    }
+  @endphp
+
+
+  <div class="container py-4">
+
+    <h3 class="fw-bold mb-4">新しい取引を追加</h3>
+
+    {{-- エラーメッセージ --}}
+    @if ($errors->any())
+      <div class="alert alert-danger">
+        <ul class="mb-0">
+          @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+          @endforeach
+        </ul>
+      </div>
+    @endif
+
+
+    {{-- 取引登録フォーム --}}
+    <form method="POST" action="{{ route('entries.store') }}">
+      @csrf
+
+      {{-- 日付 --}}
+      <div class="mb-3">
+        <label for="transaction_date" class="form-label fw-semibold">日付</label>
+        <input type="date" id="transaction_date" name="transaction_date" class="form-control"
+          value="{{ old('transaction_date') }}" required>
+      </div>
+
+      {{-- 科目 --}}
+      <div class="mb-3">
+        <label for="category_id" class="form-label fw-semibold">科目</label>
+        <select name="category_id" id="category_id" class="form-select" required>
+          <option value="" disabled selected>選択してください</option>
+          @foreach ($categories as $category)
+            <option value="{{ $category->id }}">
+              {{ $category->category_name }}
+            </option>
+          @endforeach
+        </select>
+      </div>
+
+
+      {{-- ▼▼▼ インボイス事業者かどうかでフォーム切り替え ▼▼▼ --}}
+      @if ($user->profile->invoice_enabled)
+        <div class="alert alert-info">
+          あなたは <strong>インボイス登録事業者</strong> として設定されています。
+          適格請求書の情報を入力してください。
         </div>
-        <div class="col-md-3">
-          <label for="journal" class="form-label">Journal</label>
-          <select id="journal" class="form-select">
-            <option>General journal</option>
-            <option>Sales journal</option>
-            <option>Purchases journal</option>
+
+        {{-- 税区分 --}}
+        <div class="mb-3">
+          <label for="tax_category" class="form-label fw-semibold">税区分</label>
+          <select name="tax_category" id="tax_category" class="form-select" required>
+            <option value="standard">標準税率（10%）</option>
+            <option value="reduced">軽減税率（8%）</option>
+            <option value="non-taxable">非課税</option>
           </select>
         </div>
-        <div class="col-md-6">
-          <label for="description" class="form-label">Description</label>
-          <input type="text" id="description" class="form-control" placeholder="Describe the entry">
+
+        {{-- インボイス登録番号（任意） --}}
+        <div class="mb-3">
+          <label for="invoice_number" class="form-label fw-semibold">
+            インボイス登録番号（任意）
+          </label>
+          <input type="text" id="invoice_number" name="invoice_number" class="form-control"
+            value="{{ old('invoice_number') }}" placeholder="例：T1234567890123（任意）">
         </div>
-        <div class="col-md-4">
-          <label for="supportingDoc" class="form-label">Supporting document URL</label>
-          <input type="url" id="supportingDoc" class="form-control" placeholder="https://...">
+
+        {{-- 税込金額 --}}
+        <div class="mb-3">
+          <label for="amount_inc_tax" class="form-label fw-semibold">税込金額</label>
+          <input type="number" id="amount_inc_tax" name="amount_inc_tax" class="form-control"
+            value="{{ old('amount_inc_tax') }}" required>
         </div>
-        <div class="col-md-4">
-          <label for="tags" class="form-label">Tags</label>
-          <input type="text" id="tags" class="form-control" placeholder="closing, q2, payroll">
+      @else
+        {{-- ▼ 非インボイスユーザー（通常） ▼ --}}
+        <div class="mb-3">
+          <label for="amount_inc_tax" class="form-label fw-semibold">金額（税込）</label>
+          <input type="number" id="amount_inc_tax" name="amount_inc_tax" class="form-control"
+            value="{{ old('amount_inc_tax') }}" required>
         </div>
-        <div class="col-md-4 d-flex align-items-end">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="autoReverse">
-            <label class="form-check-label" for="autoReverse">Auto-reverse next period</label>
-          </div>
-        </div>
+      @endif
+      {{-- ▲▲▲ フォーム切り替えここまで ▲▲▲ --}}
+
+
+      {{-- 摘要 --}}
+      <div class="mb-3">
+        <label for="description" class="form-label fw-semibold">摘要（任意）</label>
+        <textarea id="description" name="description" class="form-control" rows="3" placeholder="例：電車代、Wi-Fi料金 など">{{ old('description') }}</textarea>
       </div>
-    </div>
 
-    <div class="table-responsive">
-      <table class="table table-bordered align-middle mb-0">
-        <thead class="table-light">
-          <tr>
-            <th scope="col" style="width: 35%">Account</th>
-            <th scope="col" style="width: 20%">Ledger</th>
-            <th scope="col" class="text-end" style="width: 15%">Debit</th>
-            <th scope="col" class="text-end" style="width: 15%">Credit</th>
-            <th scope="col" style="width: 15%"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-              <input type="text" class="form-control" value="Rent expense">
-            </td>
-            <td>
-              <select class="form-select">
-                <option>Operating expenses</option>
-                <option>Administrative</option>
-                <option>Marketing</option>
-              </select>
-            </td>
-            <td class="text-end">
-              <input type="number" class="form-control text-end" value="120000">
-            </td>
-            <td class="text-end">
-              <input type="number" class="form-control text-end" value="0">
-            </td>
-            <td class="text-center">
-              <button type="button" class="btn btn-sm btn-outline-secondary">Remove</button>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <input type="text" class="form-control" value="Cash">
-            </td>
-            <td>
-              <select class="form-select">
-                <option>Cash and cash equivalents</option>
-                <option>Savings</option>
-              </select>
-            </td>
-            <td class="text-end">
-              <input type="number" class="form-control text-end" value="0">
-            </td>
-            <td class="text-end">
-              <input type="number" class="form-control text-end" value="120000">
-            </td>
-            <td class="text-center">
-              <button type="button" class="btn btn-sm btn-outline-secondary">Remove</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
 
-    <div class="card-body border-top">
-      <div class="d-flex justify-content-between align-items-center">
-        <button type="button" class="btn btn-outline-secondary">Add line</button>
-        <div class="text-end">
-          <p class="mb-1">Debits: <strong>120,000</strong></p>
-          <p class="mb-1">Credits: <strong>120,000</strong></p>
-          <p class="mb-0 text-success">Balanced</p>
-        </div>
-      </div>
-    </div>
+      {{-- ボタン --}}
+      <button type="submit" class="btn btn-success px-4">取引を登録する</button>
 
-    <div class="card-footer d-flex justify-content-end gap-2">
-      <button type="button" class="btn btn-outline-secondary">Save draft</button>
-      <button type="submit" class="btn btn-primary">Post entry</button>
-    </div>
-  </form>
+      <a href="{{ route('entries.index') }}" class="btn btn-outline-secondary ms-2">
+        戻る
+      </a>
+
+    </form>
+
+  </div>
+
 @endsection

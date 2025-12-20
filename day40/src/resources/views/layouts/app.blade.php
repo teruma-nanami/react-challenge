@@ -41,7 +41,7 @@
               <a class="nav-link dropdown-toggle" href="#" id="userMenu" role="button" data-bs-toggle="dropdown"
                 aria-expanded="false">{{ auth()->user()->name ?? 'User' }}</a>
               <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
-                <li><a class="dropdown-item" href="{{ route('settings.profile') }}">Profile</a></li>
+                <li><a class="dropdown-item" href="{{ route('profile.index') }}">Profile</a></li>
                 <li>
                   <form method="POST" action="{{ route('logout') }}" class="d-inline">
                     @csrf
@@ -69,7 +69,7 @@
           <a class="nav-link" href="{{ route('depreciation.assets') }}">Depreciation</a>
           <a class="nav-link" href="{{ route('filing.annual_summary') }}">Filing</a>
           <a class="nav-link" href="{{ route('chatbot.index') }}">Chatbot</a>
-          <a class="nav-link" href="{{ route('settings.profile') }}">Settings</a>
+          <a class="nav-link" href="{{ route('profile.index') }}">Settings</a>
         </nav>
       </aside>
 

@@ -1,85 +1,110 @@
 @extends('layouts.app')
 
 @section('content')
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-      <h1 class="h3 mb-1">Category Summary</h1>
-      <p class="text-muted mb-0">Track spending and income grouped by category for the selected period.</p>
-    </div>
-    <div class="d-flex gap-2">
-      <input type="month" class="form-control" value="2025-04">
-      <button class="btn btn-outline-secondary">Compare to last year</button>
-    </div>
-  </div>
+  @php
+    /**
+     * ------------------------------------------------------------
+     * プロトタイプ用ダミーデータ
+     * ------------------------------------------------------------
+     */
 
-  <div class="row g-3 mb-4">
-    <div class="col-lg-4">
-      <div class="card h-100">
-        <div class="card-header">Highlights</div>
-        <div class="card-body">
-          <p class="mb-1"><strong>Top expense:</strong> Payroll (980,000)</p>
-          <p class="mb-1"><strong>Fastest growth:</strong> Marketing (+18%)</p>
-          <p class="mb-0"><strong>Variance to plan:</strong> -5% below budget</p>
-        </div>
+    // 年度選択のダミー
+    if (!isset($years)) {
+        $years = [2024, 2025, 2026];
+    }
+
+    $selectedYear = request()->input('year', 2026);
+
+    // 科目別集計のダミーデータ
+    if (!isset($summary)) {
+        $summary = [
+            (object) [
+                'category_name' => '通信費',
+                'default_type' => 'Expense',
+                'total_amount' => 25800,
+                'count' => 12,
+            ],
+            (object) [
+                'category_name' => '旅費交通費',
+                'default_type' => 'Expense',
+                'total_amount' => 13400,
+                'count' => 7,
+            ],
+            (object) [
+                'category_name' => '売上',
+                'default_type' => 'Revenue',
+                'total_amount' => 120000,
+                'count' => 3,
+            ],
+        ];
+    }
+  @endphp
+
+
+  <div class="container py-4">
+
+    <h3 class="fw-bold mb-4">科目別集計</h3>
+
+    {{-- 年度選択 --}}
+    <form method="GET" action="{{ route('entries.category_summary') }}" class="row g-3 mb-4">
+      <div class="col-auto">
+        <select name="year" class="form-select">
+          @foreach ($years as $year)
+            <option value="{{ $year }}" @selected($year == $selectedYear)>
+              {{ $year }} 年度
+            </option>
+          @endforeach
+        </select>
+      </div>
+
+      <div class="col-auto">
+        <button type="submit" class="btn btn-primary">表示</button>
+      </div>
+    </form>
+
+
+    {{-- 集計テーブル --}}
+    <div class="card">
+      <div class="card-body">
+
+        <h5 class="fw-semibold mb-3">科目別一覧（{{ $selectedYear }}年度）</h5>
+
+        <table class="table table-striped align-middle">
+          <thead>
+            <tr>
+              <th>科目名</th>
+              <th>種別</th>
+              <th class="text-end">合計額（税込）</th>
+              <th class="text-end">件数</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @foreach ($summary as $row)
+              <tr>
+                <td>{{ $row->category_name }}</td>
+                <td>
+                  @if ($row->default_type === 'Revenue')
+                    <span class="badge bg-success">収入</span>
+                  @else
+                    <span class="badge bg-secondary">支出</span>
+                  @endif
+                </td>
+                <td class="text-end">{{ number_format($row->total_amount) }} 円</td>
+                <td class="text-end">{{ $row->count }}</td>
+              </tr>
+            @endforeach
+          </tbody>
+
+        </table>
+
       </div>
     </div>
-    <div class="col-lg-8">
-      <div class="card h-100">
-        <div class="card-header">Spending mix</div>
-        <div class="card-body">
-          <div class="progress mb-3" style="height: 32px;">
-            <div class="progress-bar bg-primary" role="progressbar" style="width: 35%;">Payroll 35%</div>
-            <div class="progress-bar bg-success" role="progressbar" style="width: 28%;">COGS 28%</div>
-            <div class="progress-bar bg-warning text-dark" role="progressbar" style="width: 20%;">Rent 20%</div>
-            <div class="progress-bar bg-info text-dark" role="progressbar" style="width: 17%;">Other 17%</div>
-          </div>
-          <p class="text-muted mb-0">Visual placeholder for charting library.</p>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <div class="table-responsive">
-    <table class="table table-striped align-middle">
-      <thead class="table-light">
-        <tr>
-          <th scope="col">Category</th>
-          <th scope="col" class="text-end">Current period</th>
-          <th scope="col" class="text-end">Prior period</th>
-          <th scope="col" class="text-end">Variance</th>
-          <th scope="col" class="text-end">Variance %</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Payroll</td>
-          <td class="text-end">980,000</td>
-          <td class="text-end">920,000</td>
-          <td class="text-end">60,000</td>
-          <td class="text-end text-danger">6.5%</td>
-        </tr>
-        <tr>
-          <td>Rent</td>
-          <td class="text-end">120,000</td>
-          <td class="text-end">120,000</td>
-          <td class="text-end">0</td>
-          <td class="text-end">0%</td>
-        </tr>
-        <tr>
-          <td>Marketing</td>
-          <td class="text-end">82,000</td>
-          <td class="text-end">69,500</td>
-          <td class="text-end">12,500</td>
-          <td class="text-end text-danger">18.0%</td>
-        </tr>
-        <tr>
-          <td>Sales revenue</td>
-          <td class="text-end">1,420,500</td>
-          <td class="text-end">1,355,200</td>
-          <td class="text-end">65,300</td>
-          <td class="text-end text-success">4.8%</td>
-        </tr>
-      </tbody>
-    </table>
+    {{-- 戻るボタン --}}
+    <a href="{{ route('entries.index') }}" class="btn btn-outline-secondary mt-3">
+      取引一覧へ戻る
+    </a>
+
   </div>
 @endsection

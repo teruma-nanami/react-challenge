@@ -1,72 +1,142 @@
 @extends('layouts.app')
 
 @section('content')
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-      <h1 class="h3 mb-1">Filing Preview</h1>
-      <p class="text-muted mb-0">Double-check the generated forms and schedules before submission.</p>
-    </div>
-    <div class="btn-group">
-      <a href="{{ route('filing.pdf_download') }}" class="btn btn-outline-secondary">Download PDF</a>
-      <button class="btn btn-primary">Submit filing</button>
-    </div>
-  </div>
+  @php
+    /**
+     * プロトタイプ用ダミーデータ
+     */
+    $summary =
+        $summary ??
+        (object) [
+            'total_revenue' => 250000,
+            'total_expense' => 98000,
+            'profit' => 152000,
+        ];
 
-  <div class="card mb-4">
-    <div class="card-header">Return summary</div>
-    <div class="card-body">
-      <div class="row g-3">
-        <div class="col-md-4">
-          <p class="text-muted mb-1">Taxable income</p>
-          <p class="h4 mb-0">8,040,000</p>
-        </div>
-        <div class="col-md-4">
-          <p class="text-muted mb-1">Total tax</p>
-          <p class="h4 mb-0">1,326,600</p>
-        </div>
-        <div class="col-md-4">
-          <p class="text-muted mb-1">Payments to date</p>
-          <p class="h4 mb-0">1,350,000</p>
-        </div>
-      </div>
-    </div>
-  </div>
+    $deductions =
+        $deductions ??
+        (object) [
+            'salary_income' => 3500000,
+            'salary_withholding_tax' => 120000,
+            'social_insurance_ded' => 250000,
+            'life_insurance_gen' => 40000,
+            'life_insurance_med' => 20000,
+            'life_insurance_annuity' => 30000,
+            'medical_expense_ded' => 50000,
+            'furusato_tax_ded' => 30000,
+            'dependency_deduction_count' => 1,
+            'has_spouse' => true,
+        ];
+  @endphp
 
-  <div class="row g-3">
-    <div class="col-lg-7">
-      <div class="card h-100">
-        <div class="card-header">Generated forms</div>
-        <ul class="list-group list-group-flush">
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            Corporate Tax Return (Form A)
-            <span class="badge text-bg-success">Ready</span>
-          </li>
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            Local Inhabitant Tax
-            <span class="badge text-bg-success">Ready</span>
-          </li>
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            Consumption Tax Schedule
-            <span class="badge text-bg-warning text-dark">Review</span>
-          </li>
-        </ul>
-        <div class="card-body">
-          <button class="btn btn-outline-secondary">Open in new tab</button>
-        </div>
+
+  <div class="container py-4">
+
+    <h3 class="fw-bold mb-4">確定申告書プレビュー</h3>
+
+    <p class="text-muted">
+      PDF に出力される内容の確認ページです。入力内容に誤りがないかをご確認ください。
+    </p>
+
+
+    {{-- ▼▼ 収支（事業所得） ▼▼ --}}
+    <div class="card mb-4">
+      <div class="card-header fw-semibold">収支内訳書（事業所得）</div>
+      <div class="card-body">
+
+        <table class="table align-middle">
+          <tbody>
+            <tr>
+              <th class="w-50">収入金額</th>
+              <td class="text-end fw-bold">{{ number_format($summary->total_revenue) }} 円</td>
+            </tr>
+
+            <tr>
+              <th>必要経費</th>
+              <td class="text-end fw-bold">{{ number_format($summary->total_expense) }} 円</td>
+            </tr>
+
+            <tr>
+              <th>所得金額（収入 − 経費）</th>
+              <td class="text-end fw-bold">{{ number_format($summary->profit) }} 円</td>
+            </tr>
+          </tbody>
+        </table>
+
       </div>
     </div>
-    <div class="col-lg-5">
-      <div class="card h-100">
-        <div class="card-header">Outstanding tasks</div>
-        <div class="card-body">
-          <ul class="mb-3">
-            <li>Attach signed board approval document.</li>
-            <li>Confirm bank account for refund.</li>
-            <li>Upload FX translation worksheet.</li>
-          </ul>
-          <button class="btn btn-outline-primary w-100">Mark tasks complete</button>
-        </div>
+
+
+
+    {{-- ▼▼ 控除一覧 ▼▼ --}}
+    <div class="card mb-4">
+      <div class="card-header fw-semibold">適用控除</div>
+      <div class="card-body">
+
+        <table class="table align-middle">
+
+          <tbody>
+            <tr>
+              <th class="w-50">給与所得</th>
+              <td class="text-end">{{ number_format($deductions->salary_income) }} 円</td>
+            </tr>
+            <tr>
+              <th>源泉徴収税額</th>
+              <td class="text-end">{{ number_format($deductions->salary_withholding_tax) }} 円</td>
+            </tr>
+            <tr>
+              <th>社会保険料控除</th>
+              <td class="text-end">{{ number_format($deductions->social_insurance_ded) }} 円</td>
+            </tr>
+            <tr>
+              <th>生命保険料控除（一般）</th>
+              <td class="text-end">{{ number_format($deductions->life_insurance_gen) }} 円</td>
+            </tr>
+            <tr>
+              <th>生命保険料控除（介護医療）</th>
+              <td class="text-end">{{ number_format($deductions->life_insurance_med) }} 円</td>
+            </tr>
+            <tr>
+              <th>生命保険料控除（個人年金）</th>
+              <td class="text-end">{{ number_format($deductions->life_insurance_annuity) }} 円</td>
+            </tr>
+            <tr>
+              <th>医療費控除</th>
+              <td class="text-end">{{ number_format($deductions->medical_expense_ded) }} 円</td>
+            </tr>
+            <tr>
+              <th>寄附金控除（ふるさと納税）</th>
+              <td class="text-end">{{ number_format($deductions->furusato_tax_ded) }} 円</td>
+            </tr>
+            <tr>
+              <th>扶養人数</th>
+              <td class="text-end">{{ $deductions->dependency_deduction_count }} 人</td>
+            </tr>
+            <tr>
+              <th>配偶者控除</th>
+              <td class="text-end">
+                {{ $deductions->has_spouse ? '適用あり' : 'なし' }}
+              </td>
+            </tr>
+          </tbody>
+
+        </table>
+
       </div>
     </div>
+
+
+
+    {{-- ▼▼ PDF ダウンロードボタン ▼▼ --}}
+    <div class="d-flex gap-2 mt-4">
+      <a href="{{ route('filing.pdf_download') }}" class="btn btn-primary px-4">
+        PDF をダウンロード
+      </a>
+
+      <a href="{{ route('filing.entries_summary') }}" class="btn btn-outline-secondary">
+        仕訳データ一覧に戻る
+      </a>
+    </div>
+
   </div>
 @endsection

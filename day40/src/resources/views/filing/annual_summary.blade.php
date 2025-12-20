@@ -1,99 +1,154 @@
 @extends('layouts.app')
 
 @section('content')
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-      <h1 class="h3 mb-1">Annual Summary</h1>
-      <p class="text-muted mb-0">Snapshot of taxable income, deductions, and payments for the fiscal year.</p>
-    </div>
-    <div class="d-flex gap-2">
-      <button class="btn btn-outline-secondary">Download CSV</button>
-      <a href="{{ route('filing.preview') }}" class="btn btn-primary">Review filing</a>
-    </div>
-  </div>
+  @php
+    /**
+     * ------------------------------------------------------------
+     * プロトタイプ用ダミーデータ
+     * ------------------------------------------------------------
+     */
 
-  <div class="row g-3 mb-4">
-    <div class="col-lg-4">
-      <div class="card h-100">
-        <div class="card-header">Income</div>
-        <div class="card-body">
-          <p class="mb-1">Gross receipts: <strong>38,500,000</strong></p>
-          <p class="mb-1">Non-operating income: <strong>2,150,000</strong></p>
-          <p class="mb-0">Adjustments: <strong>-450,000</strong></p>
-        </div>
-      </div>
-    </div>
-    <div class="col-lg-4">
-      <div class="card h-100">
-        <div class="card-header">Deductions</div>
-        <div class="card-body">
-          <p class="mb-1">Operating expenses: <strong>21,400,000</strong></p>
-          <p class="mb-1">Payroll deductions: <strong>9,850,000</strong></p>
-          <p class="mb-0">Other deductions: <strong>1,260,000</strong></p>
-        </div>
-      </div>
-    </div>
-    <div class="col-lg-4">
-      <div class="card h-100">
-        <div class="card-header">Tax position</div>
-        <div class="card-body">
-          <p class="mb-1">Taxable income: <strong>8,040,000</strong></p>
-          <p class="mb-1">Estimated tax: <strong>1,326,600</strong></p>
-          <p class="mb-0 text-success">Payments to date: <strong>1,350,000</strong></p>
-        </div>
-      </div>
-    </div>
-  </div>
+    // 年度選択用
+    if (!isset($years)) {
+        $years = [2024, 2025, 2026];
+    }
+    $selectedYear = request()->input('year', 2026);
 
-  <div class="card">
-    <div class="card-header">Quarterly breakdown</div>
-    <div class="table-responsive">
-      <table class="table table-striped mb-0">
-        <thead class="table-light">
-          <tr>
-            <th scope="col">Quarter</th>
-            <th scope="col" class="text-end">Revenue</th>
-            <th scope="col" class="text-end">Expenses</th>
-            <th scope="col" class="text-end">Taxable income</th>
-            <th scope="col" class="text-end">Estimated tax</th>
-            <th scope="col" class="text-end">Payments</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Q1</td>
-            <td class="text-end">9,450,000</td>
-            <td class="text-end">7,350,000</td>
-            <td class="text-end">2,100,000</td>
-            <td class="text-end">346,500</td>
-            <td class="text-end">350,000</td>
-          </tr>
-          <tr>
-            <td>Q2</td>
-            <td class="text-end">10,140,000</td>
-            <td class="text-end">8,010,000</td>
-            <td class="text-end">2,130,000</td>
-            <td class="text-end">351,450</td>
-            <td class="text-end">350,000</td>
-          </tr>
-          <tr>
-            <td>Q3</td>
-            <td class="text-end">10,560,000</td>
-            <td class="text-end">8,120,000</td>
-            <td class="text-end">2,440,000</td>
-            <td class="text-end">402,600</td>
-            <td class="text-end">350,000</td>
-          </tr>
-          <tr>
-            <td>Q4 (projected)</td>
-            <td class="text-end">10,900,000</td>
-            <td class="text-end">8,030,000</td>
-            <td class="text-end">2,870,000</td>
-            <td class="text-end">485,550</td>
-            <td class="text-end">300,000</td>
-          </tr>
-        </tbody>
-      </table>
+    // 収入と経費のダミー合計
+    if (!isset($summary)) {
+        $summary = (object) [
+            'total_revenue' => 250000,
+            'total_expense' => 98000,
+            'profit' => 250000 - 98000,
+        ];
+    }
+
+    // 科目別集計（収支内訳書に必要）
+    if (!isset($categoriesSummary)) {
+        $categoriesSummary = [
+            (object) [
+                'category_name' => '売上',
+                'default_type' => 'Revenue',
+                'total_amount' => 250000,
+                'count' => 5,
+            ],
+            (object) [
+                'category_name' => '通信費',
+                'default_type' => 'Expense',
+                'total_amount' => 15800,
+                'count' => 12,
+            ],
+            (object) [
+                'category_name' => '旅費交通費',
+                'default_type' => 'Expense',
+                'total_amount' => 8200,
+                'count' => 7,
+            ],
+            (object) [
+                'category_name' => '消耗品費',
+                'default_type' => 'Expense',
+                'total_amount' => 74000,
+                'count' => 9,
+            ],
+        ];
+    }
+  @endphp
+
+
+  <div class="container py-4">
+
+    <h3 class="fw-bold mb-4">年間損益まとめ（{{ $selectedYear }}年度）</h3>
+
+    {{-- 年度選択フォーム --}}
+    <form method="GET" action="{{ route('filing.annual_summary') }}" class="row g-3 mb-4">
+      <div class="col-auto">
+        <select name="year" class="form-select">
+          @foreach ($years as $year)
+            <option value="{{ $year }}" @selected($year == $selectedYear)>
+              {{ $year }} 年度
+            </option>
+          @endforeach
+        </select>
+      </div>
+
+      <div class="col-auto">
+        <button type="submit" class="btn btn-primary">表示</button>
+      </div>
+    </form>
+
+
+    {{-- 損益概要 --}}
+    <div class="card mb-4">
+      <div class="card-body">
+
+        <h5 class="fw-semibold mb-3">年間損益</h5>
+
+        <table class="table align-middle">
+          <tbody>
+            <tr>
+              <th class="w-25">収入合計</th>
+              <td class="text-end fw-bold text-success">{{ number_format($summary->total_revenue) }} 円</td>
+            </tr>
+            <tr>
+              <th>経費合計</th>
+              <td class="text-end fw-bold text-danger">{{ number_format($summary->total_expense) }} 円</td>
+            </tr>
+            <tr>
+              <th>所得（収入 − 経費）</th>
+              <td class="text-end fw-bold">
+                {{ number_format($summary->profit) }} 円
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
     </div>
+
+
+
+    {{-- 科目別集計 --}}
+    <div class="card">
+      <div class="card-header fw-semibold">科目別集計</div>
+      <div class="card-body">
+
+        <table class="table table-striped align-middle">
+          <thead>
+            <tr>
+              <th>科目名</th>
+              <th>種別</th>
+              <th class="text-end">年間合計（税込）</th>
+              <th class="text-end">件数</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @foreach ($categoriesSummary as $row)
+              <tr>
+                <td>{{ $row->category_name }}</td>
+
+                <td>
+                  @if ($row->default_type === 'Revenue')
+                    <span class="badge bg-success">収入</span>
+                  @else
+                    <span class="badge bg-secondary">経費</span>
+                  @endif
+                </td>
+
+                <td class="text-end">{{ number_format($row->total_amount) }} 円</td>
+                <td class="text-end">{{ $row->count }}</td>
+              </tr>
+            @endforeach
+          </tbody>
+        </table>
+
+      </div>
+    </div>
+
+    {{-- 戻る --}}
+    <a href="{{ route('dashboard.home') }}" class="btn btn-outline-secondary mt-3">
+      ダッシュボードに戻る
+    </a>
+
   </div>
 @endsection
