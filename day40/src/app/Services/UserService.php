@@ -3,34 +3,56 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Models\UserProfile;
+use App\Models\Ledger;
+use Illuminate\Support\Facades\Auth;
 
 class UserService
 {
-  public function list()
+  /**
+   * 指定ユーザーの当年度台帳が存在しなければ作成する
+   */
+  public function ensureLedgerExists(User $user)
   {
-    return User::with('profile')->get();
+    $year = now()->year;
+
+    Ledger::firstOrCreate(
+      [
+        'user_id' => $user->id,
+        'fiscal_year' => $year,
+      ],
+      [
+        'status' => 'Draft',
+      ]
+    );
+
+    // プロフィールも念のため作成（初回ログイン時に必要）
+    UserProfile::firstOrCreate(
+      ['user_id' => $user->id],
+      [
+        'business_name'   => null,
+        'invoice_enabled' => false,
+        'invoice_number'  => null,
+        'first_login'     => false,
+      ]
+    );
   }
 
-  public function get($id)
-  {
-    return User::with('profile')->findOrFail($id);
-  }
 
-  public function create(array $data)
+  /**
+   * プロフィール更新
+   */
+  public function updateProfile(array $data)
   {
-    return User::create($data);
-  }
+    $user = Auth::user();
 
-  public function update($id, array $data)
-  {
-    $m = User::findOrFail($id);
-    $m->update($data);
-    return $m;
-  }
-
-  public function delete($id)
-  {
-    $m = User::findOrFail($id);
-    $m->delete();
+    UserProfile::updateOrCreate(
+      ['user_id' => $user->id],
+      [
+        'business_name'   => $data['business_name'] ?? null,
+        'invoice_enabled' => $data['invoice_enabled'] ?? false,
+        'invoice_number'  => $data['invoice_number'] ?? null,
+      ]
+    );
   }
 }

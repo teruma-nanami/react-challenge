@@ -25,5 +25,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('categories', App\Http\Controllers\CategoryController::class);
     Route::apiResource('preferences', App\Http\Controllers\UserPreferenceController::class);
     Route::apiResource('tax-rules', App\Http\Controllers\TaxRuleController::class);
-    Route::apiResource('tax-fillings', App\Http\Controllers\TaxFillingController::class);
+    Route::apiResource('tax-filings', App\Http\Controllers\TaxFilingController::class);
 });

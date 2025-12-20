@@ -14,27 +14,43 @@ return new class extends Migration
 		Schema::create('entries', function (Blueprint $table) {
 			$table->id();
 
-			// 監査用ID (参照先を users に変更)
+			// ユーザー紐づけ
 			$table->foreignId('user_id')->constrained('users')->onDelete('cascade');
 
-			// 必須の外部キー (取引がどの帳簿、科目、税率に紐づくか)
+			// 年度帳簿
 			$table->foreignId('ledger_id')->constrained('ledgers')->onDelete('cascade');
+
+			// 勘定科目
 			$table->foreignId('category_id')->constrained('categories');
 
-			// tax_rules は後で定義するため、foreignIdではなくbigIntegerで定義し、
-			// 後続のマイグレーションで制約を追加します。ここでは将来の参照に備え
-			// インデックスを張っておきます。
-			$table->unsignedBigInteger('tax_rule_id')->index();
+			// 税率ルール（Standard, Reduced, NonTaxable）
+			$table->foreignId('tax_rule_id')->constrained('tax_rules');
 
-			// 取引の主要データ
+			// 取引日
 			$table->timestamp('transaction_date');
-			$table->decimal('amount_inc_tax', 15, 2);
-			$table->string('tax_category', 50); // 適用課税区分 (集計用)
-			$table->boolean('is_invoice_received')->default(false); // インボイス受領フラグ
 
-			// 任意データ
+			// 税込み金額（単式簿記ではこれが正解）
+			$table->decimal('amount_inc_tax', 15, 2);
+
+			// UI検索用の税区分（StandardTax / ReducedTax / NonTaxable）
+			$table->string('tax_category', 50);
+
+			// インボイス受領フラグ
+			$table->boolean('is_invoice_received')->default(false);
+
+			// 10万円以上の資産（白色申告の減価償却対象）
+			// → 経費には含めない
+			// → 年末に償却通知の対象
+			$table->boolean('is_capitalized')->default(false);
+
+			// サブスク判定（将来の recurring_entries の布石）
+			$table->boolean('is_recurring')->default(false);
+
+			// 取引先名（任意）
+			$table->string('partner_name')->nullable();
+
+			// 備考
 			$table->text('description')->nullable();
-			$table->string('partner_name')->nullable(); // 取引先名
 
 			$table->timestamps();
 		});

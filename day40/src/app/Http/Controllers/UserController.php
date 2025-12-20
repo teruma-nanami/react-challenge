@@ -2,42 +2,44 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\UserService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Services\UserService;
+use App\Models\UserProfile;
 
 class UserController extends Controller
 {
   protected $service;
 
+  // コンストラクタで service を注入
   public function __construct(UserService $service)
   {
     $this->service = $service;
   }
 
-  public function index()
+  /**
+   * プロフィール設定ページ表示
+   */
+  public function showProfile()
   {
-    return response()->json($this->service->list());
+    return view('profile.index', [
+      'profile' => Auth::user()->userProfile,
+    ]);
   }
 
-  public function show($id)
+  /**
+   * プロフィール更新
+   */
+  public function updateProfile(Request $request)
   {
-    return response()->json($this->service->get($id));
-  }
+    $request->validate([
+      'business_name' => 'nullable|string|max:255',
+      'invoice_enabled' => 'boolean',
+      'invoice_number' => 'nullable|string|max:20|required_if:invoice_enabled,1',
+    ]);
 
-  public function store(Request $request)
-  {
-    $item = $this->service->create($request->all());
-    return response()->json($item, 201);
-  }
+    $this->service->updateProfile($request->all());
 
-  public function update(Request $request, $id)
-  {
-    return response()->json($this->service->update($id, $request->all()));
-  }
-
-  public function destroy($id)
-  {
-    $this->service->delete($id);
-    return response()->noContent();
+    return back()->with('success', 'プロフィールを更新しました。');
   }
 }
