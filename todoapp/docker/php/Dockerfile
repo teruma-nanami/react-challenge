@@ -9,7 +9,7 @@ RUN apt update && apt install -y \
     gnupg \
     && docker-php-ext-install pdo_mysql zip
 
-# Node.js 20 を追加 React v18はnode.js20.x要求
+# Node.js 20 を追加（フロントエンド環境をDockerで統一するため）
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt install -y nodejs
 
