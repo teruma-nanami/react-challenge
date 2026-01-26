@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreContactRequest;
 use App\Http\Requests\UpdateContactRequest;
 use App\Models\Contact;
@@ -10,20 +9,15 @@ use App\Services\ContactService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class ContactController extends Controller
+class ContactController extends ApiController
 {
     public function __construct(
         private ContactService $contactService
     ) {}
 
-    private function ok(mixed $data, string $message = 'OK', int $status = 200): JsonResponse
-    {
-        return response()->json([
-            'data' => $data,
-            'message' => $message,
-        ], $status);
-    }
-
+    /**
+     * GET /api/contacts（auth必須）
+     */
     public function index(Request $request): JsonResponse
     {
         $contacts = $this->contactService->getContacts(
@@ -35,6 +29,9 @@ class ContactController extends Controller
         return $this->ok($contacts);
     }
 
+    /**
+     * GET /api/contacts/{id}（auth必須）
+     */
     public function show(int $id): JsonResponse
     {
         $contact = Contact::findOrFail($id);
@@ -42,13 +39,19 @@ class ContactController extends Controller
         return $this->ok($contact);
     }
 
+    /**
+     * POST /api/contacts（公開）
+     */
     public function store(StoreContactRequest $request): JsonResponse
     {
         $contact = $this->contactService->createContact($request->validated());
 
-        return $this->ok($contact, 'Created', 201);
+        return $this->created($contact);
     }
 
+    /**
+     * PUT /api/contacts/{id}（auth必須）
+     */
     public function update(UpdateContactRequest $request, int $id): JsonResponse
     {
         $contact = $this->contactService->updateContact(
@@ -59,11 +62,13 @@ class ContactController extends Controller
         return $this->ok($contact);
     }
 
+    /**
+     * DELETE /api/contacts/{id}（auth必須）
+     */
     public function destroy(int $id): JsonResponse
     {
-        $contact = Contact::findOrFail($id);
-        $contact->delete();
+        Contact::findOrFail($id)->delete();
 
-        return response()->json(null, 204);
+        return $this->noContent();
     }
 }
