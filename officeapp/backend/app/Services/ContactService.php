@@ -34,9 +34,9 @@ class ContactService
         if ($keyword) {
             $query->where(function ($q) use ($keyword) {
                 $q->where('name', 'like', "%{$keyword}%")
-                  ->orWhere('email', 'like', "%{$keyword}%")
-                  ->orWhere('subject', 'like', "%{$keyword}%")
-                  ->orWhere('message', 'like', "%{$keyword}%");
+                    ->orWhere('email', 'like', "%{$keyword}%")
+                    ->orWhere('subject', 'like', "%{$keyword}%")
+                    ->orWhere('message', 'like', "%{$keyword}%");
             });
         }
 
