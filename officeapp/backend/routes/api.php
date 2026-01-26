@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\TaskController;
+use App\Http\Controllers\Api\ItemController;
+use App\Http\Controllers\Api\TransactionController;
 use Illuminate\Support\Facades\Route;
 
 // 公開：問い合わせ送信だけ
@@ -18,4 +20,17 @@ Route::get('/tasks', [TaskController::class, 'index']);
 Route::post('/tasks', [TaskController::class, 'store']);
 Route::put('/tasks/{id}', [TaskController::class, 'update']);
 Route::delete('/tasks/{id}', [TaskController::class, 'destroy']);
+
+Route::apiResource('items', ItemController::class);
+// Route::get('/items', [ItemController::class, 'index']);
+// Route::get('/items/{id}', [ItemController::class, 'show']);
+// Route::post('/items', [ItemController::class, 'store']);
+// Route::put('/items/{id}', [ItemController::class, 'update']);
+// Route::delete('/items/{id}', [ItemController::class, 'destroy']);
+
+Route::apiResource('transactions', TransactionController::class)
+    ->only(['index', 'show', 'store']);
+// Route::get('/transactions', [TransactionController::class, 'index']);
+// Route::get('/transactions/{id}', [TransactionController::class, 'show']);
+// Route::post('/transactions', [TransactionController::class, 'store']);
 // });
