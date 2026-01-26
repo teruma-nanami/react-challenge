@@ -1,0 +1,80 @@
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
+import Contacts from "./pages/Contacts";
+import Tasks from "./pages/Tasks";
+import Requests from "./pages/Requests";
+import Profile from "./pages/Profile";
+import Login from "./pages/Login";
+import Layout from "./layouts/Layout";
+import ContactList from "./pages/ContactList";
+import ContactDetail from "./pages/ContactDetail";
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* 初期遷移 */}
+        <Route path="/" element={<Navigate to="/contacts" replace />} />
+
+        {/* ログイン（Layoutなし） */}
+        <Route path="/login" element={<Login />} />
+
+        {/* Layoutありのページ群 */}
+        <Route
+          path="/contacts"
+          element={
+            <Layout>
+              <Contacts />
+            </Layout>
+          }
+        />
+        <Route
+          path="/contacts/list"
+          element={
+            <Layout>
+              <ContactList />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/contacts/:id"
+          element={
+            <Layout>
+              <ContactDetail />
+            </Layout>
+          }
+        />
+        <Route
+          path="/tasks"
+          element={
+            <Layout>
+              <Tasks />
+            </Layout>
+          }
+        />
+        <Route
+          path="/requests"
+          element={
+            <Layout>
+              <Requests />
+            </Layout>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <Layout>
+              <Profile />
+            </Layout>
+          }
+        />
+
+        {/* 404 */}
+        <Route path="*" element={<div>404 Not Found</div>} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default App;

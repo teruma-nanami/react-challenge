@@ -56,5 +56,4 @@ services:
     command: sh -c "npm run dev"
 
 volumes:
-  mysql_data:
   react_node_modules:
