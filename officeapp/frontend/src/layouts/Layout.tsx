@@ -4,7 +4,6 @@ import {
   Flex,
   Heading,
   HStack,
-  Link,
   Text,
   Container,
   Button,
@@ -122,6 +121,24 @@ function Layout({ children }: Props) {
                   _hover={{ bg: "blue.50" }}
                 >
                   タスク
+                </Box>
+              )}
+            </NavLink>
+
+            {/* ✅ 追加：在庫管理 */}
+            <NavLink to="/inventory" style={{ textDecoration: "none" }}>
+              {({ isActive }) => (
+                <Box
+                  fontSize="lg"
+                  px={3}
+                  py={2}
+                  borderRadius="lg"
+                  bg={isActive ? "blue.50" : "transparent"}
+                  color={isActive ? "blue.700" : "gray.800"}
+                  fontWeight={isActive ? "800" : "600"}
+                  _hover={{ bg: "blue.50" }}
+                >
+                  在庫管理
                 </Box>
               )}
             </NavLink>

@@ -8,6 +8,8 @@ import Login from "./pages/Login";
 import Layout from "./layouts/Layout";
 import ContactList from "./pages/ContactList";
 import ContactDetail from "./pages/ContactDetail";
+import Inventory from "./pages/Inventory";
+import InventoryDetail from "./pages/InventoryDetail";
 
 function App() {
   return (
@@ -66,6 +68,23 @@ function App() {
           element={
             <Layout>
               <Profile />
+            </Layout>
+          }
+        />
+        <Route
+          path="/inventory"
+          element={
+            <Layout>
+              <Inventory />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/inventory/:id"
+          element={
+            <Layout>
+              <InventoryDetail />
             </Layout>
           }
         />
