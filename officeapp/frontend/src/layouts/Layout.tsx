@@ -8,14 +8,19 @@ import {
   Container,
   Button,
   Spacer,
+  Spinner,
 } from "@chakra-ui/react";
 import { NavLink } from "react-router-dom";
+import { useAuth0 } from "@auth0/auth0-react";
 
 type Props = {
   children: ReactNode;
 };
 
 function Layout({ children }: Props) {
+  const { isAuthenticated, isLoading, loginWithRedirect, logout, user } =
+    useAuth0();
+
   return (
     <Box minH="100vh" bg="gray.50">
       {/* Header */}
@@ -40,19 +45,48 @@ function Layout({ children }: Props) {
 
         <Spacer />
 
-        {/* 後でAuth0に差し替え */}
-        <HStack spacing={3}>
-          <Button size="sm" variant="outline" color="white" borderColor="white">
-            Login
-          </Button>
-          <Button
-            size="sm"
-            bg="white"
-            color="blue.700"
-            _hover={{ opacity: 0.9 }}
-          >
-            Logout
-          </Button>
+        <HStack spacing={4}>
+          {/* Auth0 初期化中 */}
+          {isLoading ? (
+            <HStack spacing={2}>
+              <Spinner size="sm" />
+              <Text fontSize="sm">Loading...</Text>
+            </HStack>
+          ) : (
+            <>
+              {isAuthenticated && user && (
+                <Text fontSize="sm">{user.name ?? user.email ?? "User"}</Text>
+              )}
+
+              {!isAuthenticated ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  color="white"
+                  borderColor="white"
+                  onClick={() => loginWithRedirect()}
+                >
+                  Login
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  bg="white"
+                  color="blue.700"
+                  _hover={{ opacity: 0.9 }}
+                  onClick={() =>
+                    logout({
+                      logoutParams: {
+                        returnTo: "http://localhost:5173",
+                      },
+                    })
+                  }
+                >
+                  Logout
+                </Button>
+              )}
+            </>
+          )}
         </HStack>
       </Flex>
 
@@ -142,7 +176,6 @@ function Layout({ children }: Props) {
               )}
             </NavLink>
 
-            {/* ✅ 追加：在庫管理 */}
             <NavLink to="/inventory" style={{ textDecoration: "none" }}>
               {({ isActive }) => (
                 <Box

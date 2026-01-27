@@ -1,52 +1,38 @@
+import { useEffect } from "react";
 import { Box, Button, Heading, Text, VStack } from "@chakra-ui/react";
+import { useNavigate } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 
 function Login() {
-  const { loginWithRedirect, isAuthenticated, isLoading } = useAuth0();
+  const navigate = useNavigate();
+  const { isAuthenticated, isLoading, loginWithRedirect } = useAuth0();
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      // ログイン済みならアプリ側のトップへ
+      navigate("/attendance", { replace: true });
+    }
+  }, [isAuthenticated, isLoading, navigate]);
 
   if (isLoading) {
-    return <Text>Loading...</Text>;
-  }
-
-  if (isAuthenticated) {
     return (
-      <Box textAlign="center" mt={20}>
-        <Heading size="md">すでにログインしています</Heading>
+      <Box>
+        <Heading mb={2}>Login</Heading>
+        <Text>Loading...</Text>
       </Box>
     );
   }
 
   return (
-    <Box
-      minH="100vh"
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      bg="gray.50"
-    >
-      <Box
-        bg="white"
-        p={10}
-        borderRadius="xl"
-        boxShadow="lg"
-        textAlign="center"
-        minW="360px"
-      >
-        <VStack spacing={6}>
-          <Heading size="lg">Office App</Heading>
+    <Box>
+      <VStack align="start" spacing={4}>
+        <Heading size="lg">ログイン</Heading>
+        <Text color="gray.600">続行するにはログインしてください。</Text>
 
-          <Text color="gray.600">ログインしてシステムを利用してください</Text>
-
-          <Button
-            colorScheme="blue"
-            size="lg"
-            width="100%"
-            onClick={() => loginWithRedirect()}
-          >
-            Login with Auth0
-          </Button>
-        </VStack>
-      </Box>
+        <Button colorScheme="blue" onClick={() => loginWithRedirect()}>
+          Auth0でログイン
+        </Button>
+      </VStack>
     </Box>
   );
 }
