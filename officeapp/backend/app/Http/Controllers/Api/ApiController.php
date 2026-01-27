@@ -33,4 +33,17 @@ class ApiController extends Controller
     {
         return response()->json(null, 204);
     }
+
+    // 明日これに変更する
+    protected function deletedResponse(): \Illuminate\Http\Response
+    {
+        return response()->noContent(); // 204
+    }
+
+    protected function badRequest(string $message): JsonResponse
+    {
+        return response()->json([
+            'message' => $message,
+        ], 400);
+    }
 }
