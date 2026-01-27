@@ -18,6 +18,12 @@ class Attendance extends Model
         'check_out_at',
     ];
 
+    protected $casts = [
+        'work_date'    => 'date',
+        'check_in_at'  => 'datetime',
+        'check_out_at' => 'datetime',
+    ];
+
     /**
      * 勤怠の持ち主（ユーザー）
      */

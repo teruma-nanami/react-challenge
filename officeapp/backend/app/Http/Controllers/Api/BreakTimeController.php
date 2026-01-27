@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\BreakIndexRequest;
+use App\Http\Requests\BreakStartRequest;
+use App\Http\Requests\BreakEndRequest;
 use App\Services\BreakTimeService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class BreakTimeController extends ApiController
 {
@@ -17,14 +19,11 @@ class BreakTimeController extends ApiController
      * POST /api/break-times/start
      * 休憩開始
      */
-    public function start(Request $request): JsonResponse
+    public function start(BreakStartRequest $request): JsonResponse
     {
-        $data = $request->validate([
-            'attendance_id' => ['required', 'integer', 'exists:attendances,id'],
-            'break_start_at' => ['required', 'date'],
-        ]);
-
-        $breakTime = $this->breakTimeService->startBreak($data);
+        $breakTime = $this->breakTimeService->startBreak(
+            $request->validated()
+        );
 
         return $this->created($breakTime);
     }
@@ -33,13 +32,12 @@ class BreakTimeController extends ApiController
      * PUT /api/break-times/{id}/end
      * 休憩終了
      */
-    public function end(int $id, Request $request): JsonResponse
+    public function end(int $id, BreakEndRequest $request): JsonResponse
     {
-        $data = $request->validate([
-            'break_end_at' => ['required', 'date'],
-        ]);
-
-        $breakTime = $this->breakTimeService->endBreak($id, $data);
+        $breakTime = $this->breakTimeService->endBreak(
+            $id,
+            $request->validated()
+        );
 
         return $this->ok($breakTime);
     }
@@ -48,8 +46,10 @@ class BreakTimeController extends ApiController
      * GET /api/attendances/{attendanceId}/break-times
      * 勤怠に紐づく休憩一覧
      */
-    public function indexByAttendance(int $attendanceId): JsonResponse
-    {
+    public function indexByAttendance(
+        BreakIndexRequest $request,
+        int $attendanceId
+    ): JsonResponse {
         $breakTimes = $this->breakTimeService->getByAttendance($attendanceId);
 
         return $this->ok($breakTimes);
