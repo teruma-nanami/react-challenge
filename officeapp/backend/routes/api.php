@@ -4,6 +4,8 @@ use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\ItemController;
 use App\Http\Controllers\Api\TransactionController;
+use App\Http\Controllers\Api\AttendanceController;
+use App\Http\Controllers\Api\BreakTimeController;
 use Illuminate\Support\Facades\Route;
 
 // 公開：問い合わせ送信だけ
@@ -34,3 +36,11 @@ Route::apiResource('transactions', TransactionController::class)
 // Route::get('/transactions/{id}', [TransactionController::class, 'show']);
 // Route::post('/transactions', [TransactionController::class, 'store']);
 // });
+
+Route::post('/attendances/check-in', [AttendanceController::class, 'checkIn']);
+Route::post('/attendances/check-out', [AttendanceController::class, 'checkOut']);
+Route::get('/attendances/today', [AttendanceController::class, 'today']);
+
+Route::post('/break-times/start', [BreakTimeController::class, 'start']);
+Route::put('/break-times/{id}/end', [BreakTimeController::class, 'end']);
+// }
