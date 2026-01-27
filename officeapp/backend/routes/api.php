@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ItemController;
 use App\Http\Controllers\Api\TransactionController;
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\BreakTimeController;
+use App\Http\Controllers\Api\BillingRequestController;
 use Illuminate\Support\Facades\Route;
 
 // 公開：問い合わせ送信だけ
@@ -46,4 +47,5 @@ Route::get(
 );
 Route::post('/break-times/start', [BreakTimeController::class, 'start']);
 Route::put('/break-times/{id}/end', [BreakTimeController::class, 'end']);
+Route::apiResource('billing-requests', BillingRequestController::class);
 // }
