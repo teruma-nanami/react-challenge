@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Contacts from "./pages/Contacts";
 import Tasks from "./pages/Tasks";
-import Requests from "./pages/Requests";
+import BillingRequestList from "./pages/BilingRequestList";
 import Profile from "./pages/Profile";
 import Login from "./pages/Login";
 import Layout from "./layouts/Layout";
@@ -11,6 +11,7 @@ import ContactDetail from "./pages/ContactDetail";
 import Inventory from "./pages/Inventory";
 import InventoryDetail from "./pages/InventoryDetail";
 import Attendance from "./pages/Attendance";
+import BillingRequestCreate from "./pages/BillingRequestCreate";
 
 function App() {
   return (
@@ -60,7 +61,7 @@ function App() {
           path="/requests"
           element={
             <Layout>
-              <Requests />
+              <BillingRequestList />
             </Layout>
           }
         />
@@ -98,6 +99,14 @@ function App() {
           }
         />
 
+        <Route
+          path="/requests/new"
+          element={
+            <Layout>
+              <BillingRequestCreate />
+            </Layout>
+          }
+        />
         {/* 404 */}
         <Route path="*" element={<div>404 Not Found</div>} />
       </Routes>
