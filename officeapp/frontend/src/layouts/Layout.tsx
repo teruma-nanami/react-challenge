@@ -74,6 +74,23 @@ function Layout({ children }: Props) {
           </Text>
 
           <Flex direction="column" gap={2}>
+            <NavLink to="/attendance" style={{ textDecoration: "none" }}>
+              {({ isActive }) => (
+                <Box
+                  fontSize="lg"
+                  px={3}
+                  py={2}
+                  borderRadius="lg"
+                  bg={isActive ? "blue.50" : "transparent"}
+                  color={isActive ? "blue.700" : "gray.800"}
+                  fontWeight={isActive ? "800" : "600"}
+                  _hover={{ bg: "blue.50" }}
+                >
+                  勤怠管理
+                </Box>
+              )}
+            </NavLink>
+
             <NavLink to="/contacts" style={{ textDecoration: "none" }}>
               {({ isActive }) => (
                 <Box

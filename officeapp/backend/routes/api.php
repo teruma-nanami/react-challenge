@@ -40,7 +40,10 @@ Route::apiResource('transactions', TransactionController::class)
 Route::post('/attendances/check-in', [AttendanceController::class, 'checkIn']);
 Route::post('/attendances/check-out', [AttendanceController::class, 'checkOut']);
 Route::get('/attendances/today', [AttendanceController::class, 'today']);
-
+Route::get(
+    '/attendances/{attendanceId}/break-times',
+    [BreakTimeController::class, 'indexByAttendance']
+);
 Route::post('/break-times/start', [BreakTimeController::class, 'start']);
 Route::put('/break-times/{id}/end', [BreakTimeController::class, 'end']);
 // }
