@@ -4,13 +4,20 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 use Illuminate\Http\Request;
 
 class ApiController extends Controller
 {
     protected function auth0UserId(Request $request): string
     {
-        return (string) $request->header('X-Auth0-User-Id');
+        $auth0UserId = $request->header('X-Auth0-User-Id');
+
+        if (!$auth0UserId) {
+            abort(401, 'Unauthenticated');
+        }
+
+        return $auth0UserId;
     }
 
     protected function ok(mixed $data = null, string $message = 'OK'): JsonResponse
@@ -28,14 +35,7 @@ class ApiController extends Controller
             'message' => $message,
         ], 201);
     }
-
-    protected function noContent(): JsonResponse
-    {
-        return response()->json(null, 204);
-    }
-
-    // 明日これに変更する
-    protected function deletedResponse(): \Illuminate\Http\Response
+    protected function deletedResponse(): Response
     {
         return response()->noContent(); // 204
     }

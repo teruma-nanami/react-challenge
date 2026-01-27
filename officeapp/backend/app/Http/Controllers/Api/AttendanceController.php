@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Requests\AttendanceCheckInRequest;
+use App\Http\Requests\AttendanceCheckOutRequest;
+use App\Http\Requests\AttendanceTodayRequest;
 use App\Services\AttendanceService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use InvalidArgumentException;
 use Carbon\Carbon;
 
@@ -18,24 +20,17 @@ class AttendanceController extends ApiController
      * POST /api/attendances/check-in
      * 出勤打刻
      */
-    public function checkIn(Request $request): JsonResponse
+    public function checkIn(AttendanceCheckInRequest $request): JsonResponse
     {
         try {
-            // ※ Auth0導入前なので一旦 request から
-            $userId = (int) $request->input('user_id');
-
-            if ($userId <= 0) {
-                return $this->badRequest('Invalid user id.');
-            }
-
             $attendance = $this->attendanceService->checkIn(
-                $userId,
+                $request->userId(),
                 now()
             );
 
             return $this->created($attendance, 'checked in');
         } catch (InvalidArgumentException $e) {
-            // 業務的に想定された失敗
+            // 業務的に想定された失敗（2重打刻など）
             return $this->badRequest($e->getMessage());
         }
     }
@@ -44,17 +39,11 @@ class AttendanceController extends ApiController
      * POST /api/attendances/check-out
      * 退勤打刻
      */
-    public function checkOut(Request $request): JsonResponse
+    public function checkOut(AttendanceCheckOutRequest $request): JsonResponse
     {
         try {
-            $userId = (int) $request->input('user_id');
-
-            if ($userId <= 0) {
-                return $this->badRequest('Invalid user id.');
-            }
-
             $attendance = $this->attendanceService->checkOut(
-                $userId,
+                $request->userId(),
                 now()
             );
 
@@ -64,13 +53,14 @@ class AttendanceController extends ApiController
         }
     }
 
-
-    public function today(Request $request): JsonResponse
+    /**
+     * GET /api/attendances/today
+     * 本日の勤怠取得
+     */
+    public function today(AttendanceTodayRequest $request): JsonResponse
     {
-        $userId = (int) $request->query('user_id');
-
         $attendance = $this->attendanceService->getTodayAttendance(
-            $userId,
+            $request->userId(),
             Carbon::now()
         );
 
