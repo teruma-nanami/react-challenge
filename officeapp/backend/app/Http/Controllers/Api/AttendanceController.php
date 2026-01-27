@@ -6,6 +6,7 @@ use App\Services\AttendanceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use InvalidArgumentException;
+use Carbon\Carbon;
 
 class AttendanceController extends ApiController
 {
@@ -64,20 +65,15 @@ class AttendanceController extends ApiController
     }
 
 
-    /**
-     * GET /api/attendances/today
-     * 今日の勤怠取得（任意）
-     */
-    // public function today(Request $request): JsonResponse
-    // {
-    //     $userId = (int) $request->input('user_id');
+    public function today(Request $request): JsonResponse
+    {
+        $userId = (int) $request->query('user_id');
 
-    //     if ($userId <= 0) {
-    //         return $this->badRequest('Invalid user id.');
-    //     }
+        $attendance = $this->attendanceService->getTodayAttendance(
+            $userId,
+            Carbon::now()
+        );
 
-    //     $attendance = $this->attendanceService->getTodayAttendance($userId);
-
-    //     return $this->ok($attendance);
-    // }
+        return $this->ok($attendance);
+    }
 }

@@ -10,6 +10,7 @@ import ContactList from "./pages/ContactList";
 import ContactDetail from "./pages/ContactDetail";
 import Inventory from "./pages/Inventory";
 import InventoryDetail from "./pages/InventoryDetail";
+import Attendance from "./pages/Attendance";
 
 function App() {
   return (
@@ -85,6 +86,14 @@ function App() {
           element={
             <Layout>
               <InventoryDetail />
+            </Layout>
+          }
+        />
+        <Route
+          path="/attendance"
+          element={
+            <Layout>
+              <Attendance />
             </Layout>
           }
         />

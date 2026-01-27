@@ -3,61 +3,43 @@
 namespace App\Services;
 
 use App\Models\BreakTime;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 class BreakTimeService
 {
-    /**
-     * 休憩開始
-     */
     public function startBreak(array $data): BreakTime
     {
         return DB::transaction(function () use ($data) {
-            // 同一勤怠で「終了していない休憩」が存在しないかチェック
-            $exists = BreakTime::where('attendance_id', $data['attendance_id'])
-                ->whereNull('break_end_at')
-                ->exists();
-
-            if ($exists) {
-                throw new InvalidArgumentException('Break already started.');
-            }
-
             return BreakTime::create([
                 'attendance_id'  => $data['attendance_id'],
-                'break_start_at' => $data['break_start_at'],
+                'break_start_at' => Carbon::parse($data['break_start_at']),
             ]);
         });
     }
 
-    /**
-     * 休憩終了
-     */
-    public function endBreak(int $breakTimeId, array $data): BreakTime
+    public function endBreak(int $id, array $data): BreakTime
     {
-        return DB::transaction(function () use ($breakTimeId, $data) {
-            $breakTime = BreakTime::findOrFail($breakTimeId);
+        return DB::transaction(function () use ($id, $data) {
+            $break = BreakTime::lockForUpdate()->find($id);
 
-            if ($breakTime->break_end_at !== null) {
+            if (!$break) {
+                throw new InvalidArgumentException('Break not found.');
+            }
+
+            if ($break->break_end_at !== null) {
                 throw new InvalidArgumentException('Break already ended.');
             }
 
-            // 開始より前の終了は禁止
-            if ($data['break_end_at'] < $breakTime->break_start_at) {
-                throw new InvalidArgumentException('Invalid break end time.');
-            }
-
-            $breakTime->update([
-                'break_end_at' => $data['break_end_at'],
+            $break->update([
+                'break_end_at' => Carbon::parse($data['break_end_at']),
             ]);
 
-            return $breakTime->fresh();
+            return $break;
         });
     }
 
-    /**
-     * 勤怠に紐づく休憩一覧取得
-     */
     public function getByAttendance(int $attendanceId)
     {
         return BreakTime::where('attendance_id', $attendanceId)
