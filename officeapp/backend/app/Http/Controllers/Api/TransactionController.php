@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\StoreInventoryTransactionRequest;
 use App\Models\InventoryTransaction;
 use App\Services\InventoryService;
 use Illuminate\Http\JsonResponse;
@@ -16,13 +16,15 @@ class TransactionController extends ApiController
 
     /**
      * GET /api/transactions
-     * 履歴一覧（とりあえず最新順）
+     * 履歴一覧（最新順）
      */
     public function index(Request $request): JsonResponse
     {
-        $perPage = (int) $request->query('per_page', 20);
+        $query = $this->inventoryService->transactionBaseQuery();
 
-        $transactions = $this->inventoryService->getTransactions($perPage);
+        $transactions = $query
+            ->orderByDesc('id')   // order は Controller の責務
+            ->paginate(20); // paginate も Controller の責務
 
         return $this->ok($transactions);
     }
@@ -33,26 +35,22 @@ class TransactionController extends ApiController
      */
     public function show(int $id): JsonResponse
     {
-        $transaction = InventoryTransaction::with(['item', 'user'])->findOrFail($id);
+        $transaction = $this->inventoryService
+            ->transactionBaseQuery()
+            ->findOrFail($id);
 
         return $this->ok($transaction);
     }
 
     /**
      * POST /api/transactions
-     * 入庫/出庫/調整（在庫数も更新する）
+     * 入庫/出庫（在庫数も更新する）
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreInventoryTransactionRequest $request): JsonResponse
     {
-        $data = $request->validate([
-            'inventory_item_id' => ['required', 'integer', 'exists:inventory_items,id'],
-            'user_id' => ['nullable', 'integer', 'exists:users,id'],
-            'type' => ['required', 'string', 'in:in,out,adjust'],
-            'quantity' => ['required', 'integer', 'min:1'],
-            'note' => ['nullable', 'string'],
-        ]);
-
-        $transaction = $this->inventoryService->createTransaction($data);
+        $transaction = $this->inventoryService->createTransaction(
+            $request->validated()
+        );
 
         return $this->created($transaction);
     }

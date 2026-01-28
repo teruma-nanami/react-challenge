@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Enums\BillingRequestStatus;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class BillingRequest extends Model
@@ -21,6 +22,9 @@ class BillingRequest extends Model
 
     protected $casts = [
         'amount' => 'integer',
+        'user_id' => 'integer',
+        'approved_by' => 'integer',
+        'status' => BillingRequestStatus::class,
     ];
 
     /**

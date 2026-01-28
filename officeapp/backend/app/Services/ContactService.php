@@ -3,26 +3,40 @@
 namespace App\Services;
 
 use App\Models\Contact;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Builder;
 
 class ContactService
 {
+    /**
+     * お問い合わせ作成（公開）
+     */
     public function createContact(array $data): Contact
     {
         return Contact::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'subject' => $data['subject'],
-            'message' => $data['message'],
+            'name'     => $data['name'],
+            'email'    => $data['email'],
+            'subject'  => $data['subject'],
+            'message'  => $data['message'],
             'category' => $data['category'],
-            'status' => 'new',
+            'status'   => 'new',
         ]);
     }
 
-    public function getContacts(?string $status, ?string $category, ?string $keyword): Collection
+    /**
+     * お問い合わせ一覧用のクエリを構築
+     * ※ paginate / get / count は Controller 側で行う
+     */
+    public function baseQuery(): Builder
     {
-        $query = Contact::query()->orderBy('created_at', 'desc');
+        return Contact::query();
+    }
 
+    public function applyFilters(
+        Builder $query,
+        ?string $status,
+        ?string $category,
+        ?string $keyword
+    ): Builder {
         if ($status) {
             $query->where('status', $status);
         }
@@ -40,22 +54,33 @@ class ContactService
             });
         }
 
-        return $query->get();
+        return $query;
     }
 
+    /**
+     * お問い合わせ更新
+     */
     public function updateContact(int $id, array $data): Contact
     {
         $contact = Contact::findOrFail($id);
 
-        $contact->update([
-            'status' => $data['status'] ?? $contact->status,
-            'assigned_user_id' => array_key_exists('assigned_user_id', $data)
-                ? $data['assigned_user_id']
-                : $contact->assigned_user_id,
-            'internal_note' => array_key_exists('internal_note', $data)
-                ? $data['internal_note']
-                : $contact->internal_note,
-        ]);
+        $updatable = [
+            'status',
+            'assigned_user_id',
+            'internal_note',
+        ];
+
+        $payload = [];
+
+        foreach ($updatable as $field) {
+            if (array_key_exists($field, $data)) {
+                $payload[$field] = $data[$field];
+            }
+        }
+
+        if ($payload !== []) {
+            $contact->update($payload);
+        }
 
         return $contact;
     }

@@ -4,23 +4,30 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\StoreBillingRequest;
-use App\Models\BillingRequest;
+use App\Services\BillingRequestService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
+use Illuminate\Http\Request;
 
 class BillingRequestController extends ApiController
 {
+    public function __construct(
+        private BillingRequestService $billingRequestService
+    ) {}
+
     /**
      * GET /api/billings
-     * 稟議一覧（自分が出したもの）
+     * 稟議一覧（ログインユーザー自身）
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        // Auth0導入前：一旦 user_id = 1 仮固定
-        $userId = 1;
+        $userId = $this->auth0UserId($request);
 
-        $billings = BillingRequest::query()
-            ->where('user_id', $userId)
+        $query = $this->billingRequestService
+            ->baseQueryByUser($userId);
+
+        // 並び順・ページングは Controller の責務
+        $billings = $query
             ->orderByDesc('id')
             ->paginate(20);
 
@@ -33,10 +40,12 @@ class BillingRequestController extends ApiController
      */
     public function store(StoreBillingRequest $request): JsonResponse
     {
-        $userId = 1; // 仮（あとで Auth0 に置き換える）
+        $userId = $this->auth0UserId($request);
+
         $data = $request->validated();
         $data['user_id'] = $userId;
-        $billing = BillingRequest::create($data);
+
+        $billing = $this->billingRequestService->create($data);
 
         return $this->created($billing, 'billing created');
     }
@@ -45,14 +54,12 @@ class BillingRequestController extends ApiController
      * GET /api/billings/{id}
      * 稟議詳細
      */
-    public function show(int $id): JsonResponse
+    public function show(Request $request, int $id): JsonResponse
     {
-        // Auth0導入前：一旦 user_id = 1 仮固定
-        $userId = 1;
+        $userId = $this->auth0UserId($request);
 
-        $billing = BillingRequest::where('id', $id)
-            ->where('user_id', $userId)
-            ->firstOrFail();
+        $billing = $this->billingRequestService
+            ->findByUser($id, $userId);
 
         return $this->ok($billing);
     }
@@ -61,16 +68,12 @@ class BillingRequestController extends ApiController
      * DELETE /api/billings/{id}
      * 稟議削除（提出前想定）
      */
-    public function destroy(int $id): Response
+    public function destroy(Request $request, int $id): Response
     {
-        // Auth0導入前：一旦 user_id = 1 仮固定
-        $userId = 1;
+        $userId = $this->auth0UserId($request);
 
-        $billing = BillingRequest::where('id', $id)
-            ->where('user_id', $userId)
-            ->firstOrFail();
-
-        $billing->delete();
+        $this->billingRequestService
+            ->deleteByUser($id, $userId);
 
         return $this->deletedResponse();
     }

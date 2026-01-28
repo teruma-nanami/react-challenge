@@ -7,11 +7,9 @@ use Illuminate\Support\Collection;
 
 class TaskService
 {
-    public function getTasks(string $auth0UserId): Collection
+    public function getTasks(string $auth0UserId)
     {
-        return Task::where('auth0_user_id', $auth0UserId)
-            ->orderBy('created_at', 'desc')
-            ->get();
+        return Task::where('auth0_user_id', $auth0UserId);
     }
 
     public function createTask(string $auth0UserId, array $data): Task
