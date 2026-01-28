@@ -2,28 +2,15 @@
 
 namespace App\Services;
 
+use App\Enums\InventoryTransactionType;
 use App\Models\InventoryItem;
 use App\Models\InventoryTransaction;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class InventoryService
 {
-    /**
-     * 在庫一覧を取得（activeのみ、などの条件は必要になったら追加）
-     */
-    public function getItems(?bool $isActive = null): Collection
-    {
-        $query = InventoryItem::query()->orderBy('id', 'desc');
-
-        if (!is_null($isActive)) {
-            $query->where('is_active', $isActive);
-        }
-
-        return $query->get();
-    }
 
     /**
      * 在庫商品を作成
@@ -56,63 +43,50 @@ class InventoryService
     }
 
     /**
-     * 入庫 / 出庫 / 調整（履歴を残しつつ在庫数も更新する）
-     *
-     * type: in / out / adjust
-     * quantity: 正の整数
+     * 入庫 / 出庫処理
      */
     public function createTransaction(array $data): InventoryTransaction
     {
-        $type = $data['type'];
-        $qty = (int) $data['quantity'];
-
-        if (!in_array($type, ['in', 'out', 'adjust'], true)) {
-            throw new InvalidArgumentException('Invalid transaction type.');
-        }
+        $type = InventoryTransactionType::from($data['type']);
+        $qty  = (int) $data['quantity'];
 
         if ($qty <= 0) {
             throw new InvalidArgumentException('Quantity must be greater than 0.');
         }
 
         return DB::transaction(function () use ($data, $type, $qty) {
-            $item = InventoryItem::lockForUpdate()->findOrFail($data['inventory_item_id']);
+            $item = InventoryItem::lockForUpdate()
+                ->findOrFail($data['inventory_item_id']);
 
-            // 在庫数を更新
-            if ($type === 'in') {
-                $item->quantity += $qty;
+            if (
+                $type === InventoryTransactionType::OUT &&
+                $item->quantity < $qty
+            ) {
+                throw new InvalidArgumentException('Not enough stock.');
             }
 
-            if ($type === 'out') {
-                $next = $item->quantity - $qty;
-                if ($next < 0) {
-                    throw new InvalidArgumentException('Not enough stock.');
-                }
-                $item->quantity = $next;
-            }
-
-            if ($type === 'adjust') {
-                // adjustは「指定数に合わせる」じゃなく「増減」にするならここを変更
-                $item->quantity += $qty;
-            }
+            $item->quantity += match ($type) {
+                InventoryTransactionType::IN  => $qty,
+                InventoryTransactionType::OUT => -$qty,
+            };
 
             $item->save();
 
-            // 履歴を作成
             return InventoryTransaction::create([
                 'inventory_item_id' => $item->id,
                 'user_id' => $data['user_id'] ?? null,
-                'type' => $type,
+                'type' => $type->value,
                 'quantity' => $qty,
                 'note' => $data['note'] ?? null,
             ]);
         });
     }
-
-    public function getTransactions(int $perPage = 20): LengthAwarePaginator
+    /**
+     * 取引履歴の共通クエリ（Controller が order/paginate する前提）
+     */
+    public function transactionBaseQuery(): Builder
     {
         return InventoryTransaction::query()
-            ->with(['item', 'user'])
-            ->orderBy('id', 'desc')
-            ->paginate($perPage);
+            ->with(['item', 'user']);
     }
 }

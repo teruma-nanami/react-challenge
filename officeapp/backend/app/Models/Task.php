@@ -16,4 +16,7 @@ class Task extends Model
         'status',
         'due_date',
     ];
+    protected $casts = [
+        'due_date' => 'date',
+    ];
 }

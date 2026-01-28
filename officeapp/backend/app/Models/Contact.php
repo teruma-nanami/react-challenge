@@ -21,6 +21,12 @@ class Contact extends Model
         'internal_note',
     ];
 
+    protected $casts = [
+        'assigned_user_id' => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
     /**
      * 担当管理者
      */

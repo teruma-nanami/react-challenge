@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\StoreInventoryItemRequest;
+use App\Http\Requests\UpdateInventoryItemRequest;
+use App\Http\Requests\StoreInventoryTransactionRequest;
 use App\Models\InventoryItem;
 use App\Services\InventoryService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 use Illuminate\Http\Request;
 
 class ItemController extends ApiController
@@ -20,13 +24,22 @@ class ItemController extends ApiController
      */
     public function index(Request $request): JsonResponse
     {
-        // activeだけ表示したい場合に使える
-        // ?is_active=1 or 0
+        // is_active は boolean に正規化
         $isActive = $request->query('is_active');
+        if (!is_null($isActive)) {
+            $isActive = filter_var($isActive, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+        }
 
-        $items = $this->inventoryService->getItems(
-            is_null($isActive) ? null : (bool) $isActive
-        );
+        $query = InventoryItem::query();
+
+        if (!is_null($isActive)) {
+            $query->where('is_active', $isActive);
+        }
+
+        // 一覧の並びは Controller が責任を持つ
+        $items = $query
+            ->orderByDesc('id')
+            ->paginate(20);
 
         return $this->ok($items);
     }
@@ -46,17 +59,11 @@ class ItemController extends ApiController
      * POST /api/items
      * 作成
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreInventoryItemRequest $request): JsonResponse
     {
-        // 今回はRequestクラスは作らず、最低限でいく
-        $data = $request->validate([
-            'sku' => ['nullable', 'string', 'max:255'],
-            'name' => ['required', 'string', 'max:255'],
-            'quantity' => ['nullable', 'integer', 'min:0'],
-            'is_active' => ['nullable', 'boolean'],
-        ]);
-
-        $item = $this->inventoryService->createItem($data);
+        $item = $this->inventoryService->createItem(
+            $request->validated()
+        );
 
         return $this->created($item);
     }
@@ -65,29 +72,40 @@ class ItemController extends ApiController
      * PUT /api/items/{id}
      * 更新
      */
-    public function update(Request $request, int $id): JsonResponse
-    {
-        $data = $request->validate([
-            'sku' => ['nullable', 'string', 'max:255'],
-            'name' => ['sometimes', 'string', 'max:255'],
-            'quantity' => ['sometimes', 'integer', 'min:0'],
-            'is_active' => ['sometimes', 'boolean'],
-        ]);
-
-        $item = $this->inventoryService->updateItem($id, $data);
+    public function update(
+        UpdateInventoryItemRequest $request,
+        int $id
+    ): JsonResponse {
+        $item = $this->inventoryService->updateItem(
+            $id,
+            $request->validated()
+        );
 
         return $this->ok($item);
     }
 
     /**
-     * DELETE /api/items/{id}
-     * 本当は削除より is_active=false を推奨だが、一応用意
+     * POST /api/items/transactions
+     * 入庫 / 出庫
      */
-    public function destroy(int $id): JsonResponse
-    {
-        $item = InventoryItem::findOrFail($id);
-        $item->delete();
+    public function storeTransaction(
+        StoreInventoryTransactionRequest $request
+    ): JsonResponse {
+        $transaction = $this->inventoryService->createTransaction(
+            $request->validated()
+        );
 
-        return $this->noContent();
+        return $this->created($transaction);
+    }
+
+    /**
+     * DELETE /api/items/{id}
+     * 論理削除推奨だが一応用意
+     */
+    public function destroy(int $id): Response
+    {
+        InventoryItem::findOrFail($id)->delete();
+
+        return $this->deletedResponse();
     }
 }

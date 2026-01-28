@@ -20,11 +20,17 @@ class ContactController extends ApiController
      */
     public function index(Request $request): JsonResponse
     {
-        $contacts = $this->contactService->getContacts(
-            status: $request->query('status'),
-            category: $request->query('category'),
-            keyword: $request->query('keyword')
+        $query = $this->contactService->baseQuery();
+        $query = $this->contactService->applyFilters(
+            $query,
+            $request->query('status'),
+            $request->query('category'),
+            $request->query('keyword')
         );
+
+        $contacts = $query
+            ->orderByDesc('created_at')
+            ->paginate(20);
 
         return $this->ok($contacts);
     }
@@ -44,7 +50,9 @@ class ContactController extends ApiController
      */
     public function store(StoreContactRequest $request): JsonResponse
     {
-        $contact = $this->contactService->createContact($request->validated());
+        $contact = $this->contactService->createContact(
+            $request->validated()
+        );
 
         return $this->created($contact);
     }
@@ -60,15 +68,5 @@ class ContactController extends ApiController
         );
 
         return $this->ok($contact);
-    }
-
-    /**
-     * DELETE /api/contacts/{id}（auth必須）
-     */
-    public function destroy(int $id): JsonResponse
-    {
-        Contact::findOrFail($id)->delete();
-
-        return $this->noContent();
     }
 }
