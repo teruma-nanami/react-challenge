@@ -26,7 +26,7 @@ function Contacts() {
   const [error, setError] = useState<string | null>(null);
 
   const submitContact = async () => {
-    // 超最低限のバリデーション
+    // 最低限のフロントバリデーション（UX用）
     if (!name.trim() || !email.trim() || !subject.trim() || !message.trim()) {
       setError("未入力の項目があります");
       return;
@@ -37,27 +37,8 @@ function Contacts() {
       setSuccess(null);
       setError(null);
 
-      // const res = await fetch(`${API_BASE_URL}/api/contacts`, {
-      //   method: "POST",
-      //   headers: {
-      //     Accept: "application/json",
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify({
-      //     name,
-      //     email,
-      //     subject,
-      //     category,
-      //     message,
-      //   }),
-      // });
-
-      // if (!res.ok) {
-      //   const text = await res.text();
-      //   throw new Error(`送信に失敗しました: ${res.status} ${text}`);
-      // }
-
-      await apiFetch("/api/contacts", {
+      // このページでは「送信できたか」だけ分かればよい
+      await apiFetch<void>("/api/contacts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -80,7 +61,9 @@ function Contacts() {
 
       setSuccess("送信しました。ありがとうございました。");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
+      // 技術的な詳細は出さない（外部ユーザー向け）
+      console.error(err);
+      setError("送信に失敗しました。時間をおいて再度お試しください。");
     } finally {
       setSubmitting(false);
     }

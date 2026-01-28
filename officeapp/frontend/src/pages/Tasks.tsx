@@ -21,7 +21,7 @@ import type { Task, TaskStatus } from "../types/task";
 
 function Tasks() {
   // 🔥 Auth0なしで固定ユーザー（後でAuth0に戻す）
-  const auth0UserId = "auth0|test-user";
+  const auth0UserId = "auth0|admin-user";
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,6 +35,37 @@ function Tasks() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // APIの返り方が揺れても Task[] に正規化する
+  const normalizeTasks = (payload: unknown): Task[] => {
+    // 1) 生配列 Task[]
+    if (Array.isArray(payload)) return payload as Task[];
+
+    // 2) ApiResponse<Task[]>
+    if (
+      payload &&
+      typeof payload === "object" &&
+      "data" in payload &&
+      Array.isArray((payload as any).data)
+    ) {
+      return (payload as any).data as Task[];
+    }
+
+    // 3) ApiResponse<Paginate<Task>>
+    //    { data: { data: Task[], ... }, message: string }
+    if (
+      payload &&
+      typeof payload === "object" &&
+      "data" in payload &&
+      (payload as any).data &&
+      typeof (payload as any).data === "object" &&
+      Array.isArray((payload as any).data.data)
+    ) {
+      return (payload as any).data.data as Task[];
+    }
+
+    throw new Error("Invalid API response");
+  };
+
   const fetchTasks = async () => {
     try {
       setLoading(true);
@@ -46,9 +77,11 @@ function Tasks() {
         },
       });
 
-      setTasks(res.data);
+      const normalized = normalizeTasks(res);
+      setTasks(normalized);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
+      setTasks([]); // 落下防止
     } finally {
       setLoading(false);
     }

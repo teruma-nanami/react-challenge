@@ -8,7 +8,7 @@ export type Contact = {
   email: string;
   subject: string;
   message: string;
-  category: string;
+  category: ContactCategory;
   status: ContactStatus;
 
   assigned_user_id: number | null;

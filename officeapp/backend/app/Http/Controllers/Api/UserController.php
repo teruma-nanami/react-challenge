@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\UpdateUserRequest;
 use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,17 +16,30 @@ class UserController extends ApiController
 
     /**
      * GET /api/profile
-     * 自分のプロフィールを返す（暫定：X-Auth0-User-Id でユーザー特定）
+     * 自分のプロフィール取得
      */
     public function me(Request $request): JsonResponse
     {
-        $auth0UserId = $request->header('X-Auth0-User-Id');
-
-        if (!$auth0UserId) {
-            return $this->badRequest('Auth0 user id が見つかりません。');
-        }
+        $auth0UserId = $this->auth0UserId($request);
 
         $user = $this->userService->findByAuth0UserId($auth0UserId);
+
+        return $this->ok($user);
+    }
+
+    /**
+     * PUT /api/profile
+     * 自分のプロフィール更新
+     */
+    public function update(
+        UpdateUserRequest $request
+    ): JsonResponse {
+        $auth0UserId = $this->auth0UserId($request);
+
+        $user = $this->userService->updateByAuth0UserId(
+            $auth0UserId,
+            $request->validated()
+        );
 
         return $this->ok($user);
     }
