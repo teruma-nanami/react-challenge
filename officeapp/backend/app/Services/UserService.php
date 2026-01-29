@@ -7,10 +7,16 @@ use App\Models\User;
 class UserService
 {
     /**
-     * Auth0の user sub(auth0_user_id) からユーザーを取得
+     * プロフィール更新（自分自身）
      */
-    public function findByAuth0UserId(string $auth0UserId): User
+    public function update(User $user, array $data): User
     {
-        return User::where('auth0_user_id', $auth0UserId)->firstOrFail();
+        $user->update([
+            'display_name' => $data['display_name'] ?? $user->display_name,
+            'email'        => $data['email'] ?? $user->email,
+            'role'         => $data['role'] ?? $user->role,
+        ]);
+
+        return $user->refresh();
     }
 }

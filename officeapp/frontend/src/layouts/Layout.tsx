@@ -23,7 +23,7 @@ function Layout({ children }: Props) {
 
   return (
     <Box minH="100vh" bg="gray.50">
-      {/* Header */}
+      {/* ===== Header（常に表示） ===== */}
       <Flex
         as="header"
         position="sticky"
@@ -46,7 +46,6 @@ function Layout({ children }: Props) {
         <Spacer />
 
         <HStack spacing={4}>
-          {/* Auth0 初期化中 */}
           {isLoading ? (
             <HStack spacing={2}>
               <Spinner size="sm" />
@@ -91,164 +90,120 @@ function Layout({ children }: Props) {
       </Flex>
 
       <Flex>
-        {/* Sidebar */}
-        <Box
-          as="nav"
-          w="260px"
-          minH="calc(100vh - 72px)"
-          bg="white"
-          borderRight="1px solid"
-          borderColor="gray.200"
-          px={5}
-          py={6}
-          display={{ base: "none", md: "block" }}
-        >
-          <Text fontSize="sm" color="gray.500" mb={4} fontWeight="700">
-            MENU
-          </Text>
+        {/* ===== Sidebar（ログイン時のみ表示） ===== */}
+        {isAuthenticated && (
+          <Box
+            as="nav"
+            w="260px"
+            minH="calc(100vh - 72px)"
+            bg="white"
+            borderRight="1px solid"
+            borderColor="gray.200"
+            px={5}
+            py={6}
+            display={{ base: "none", md: "block" }}
+          >
+            <Text fontSize="sm" color="gray.500" mb={4} fontWeight="700">
+              MENU
+            </Text>
 
-          <Flex direction="column" gap={2}>
-            <NavLink to="/attendance" style={{ textDecoration: "none" }}>
-              {({ isActive }) => (
-                <Box
-                  fontSize="lg"
-                  px={3}
-                  py={2}
-                  borderRadius="lg"
-                  bg={isActive ? "blue.50" : "transparent"}
-                  color={isActive ? "blue.700" : "gray.800"}
-                  fontWeight={isActive ? "800" : "600"}
-                  _hover={{ bg: "blue.50" }}
-                >
-                  勤怠管理
-                </Box>
-              )}
-            </NavLink>
+            <Flex direction="column" gap={2}>
+              <NavLink to="/attendance" style={{ textDecoration: "none" }}>
+                {({ isActive }) => (
+                  <Box
+                    fontSize="lg"
+                    px={3}
+                    py={2}
+                    borderRadius="lg"
+                    bg={isActive ? "blue.50" : "transparent"}
+                    color={isActive ? "blue.700" : "gray.800"}
+                    fontWeight={isActive ? "800" : "600"}
+                    _hover={{ bg: "blue.50" }}
+                  >
+                    勤怠管理
+                  </Box>
+                )}
+              </NavLink>
 
-            <NavLink to="/contacts" style={{ textDecoration: "none" }}>
-              {({ isActive }) => (
-                <Box
-                  fontSize="lg"
-                  px={3}
-                  py={2}
-                  borderRadius="lg"
-                  bg={isActive ? "blue.50" : "transparent"}
-                  color={isActive ? "blue.700" : "gray.800"}
-                  fontWeight={isActive ? "800" : "600"}
-                  _hover={{ bg: "blue.50" }}
-                >
-                  お問い合わせ
-                </Box>
-              )}
-            </NavLink>
+              {/* 外部お問い合わせはサイドバーに出さない */}
 
-            <NavLink to="/contacts/list" style={{ textDecoration: "none" }}>
-              {({ isActive }) => (
-                <Box
-                  fontSize="lg"
-                  px={3}
-                  py={2}
-                  borderRadius="lg"
-                  bg={isActive ? "blue.50" : "transparent"}
-                  color={isActive ? "blue.700" : "gray.800"}
-                  fontWeight={isActive ? "800" : "600"}
-                  _hover={{ bg: "blue.50" }}
-                >
-                  お問い合わせ一覧
-                </Box>
-              )}
-            </NavLink>
+              <NavLink
+                to="/contacts/internal"
+                style={{ textDecoration: "none" }}
+              >
+                {({ isActive }) => (
+                  <Box
+                    fontSize="lg"
+                    px={3}
+                    py={2}
+                    borderRadius="lg"
+                    bg={isActive ? "blue.50" : "transparent"}
+                    color={isActive ? "blue.700" : "gray.800"}
+                    fontWeight={isActive ? "800" : "600"}
+                    _hover={{ bg: "blue.50" }}
+                  >
+                    お問い合わせ一覧
+                  </Box>
+                )}
+              </NavLink>
 
-            <NavLink to="/tasks" style={{ textDecoration: "none" }}>
-              {({ isActive }) => (
-                <Box
-                  fontSize="lg"
-                  px={3}
-                  py={2}
-                  borderRadius="lg"
-                  bg={isActive ? "blue.50" : "transparent"}
-                  color={isActive ? "blue.700" : "gray.800"}
-                  fontWeight={isActive ? "800" : "600"}
-                  _hover={{ bg: "blue.50" }}
-                >
-                  タスク
-                </Box>
-              )}
-            </NavLink>
+              <NavLink to="/tasks" style={{ textDecoration: "none" }}>
+                {({ isActive }) => (
+                  <Box
+                    fontSize="lg"
+                    px={3}
+                    py={2}
+                    borderRadius="lg"
+                    bg={isActive ? "blue.50" : "transparent"}
+                    color={isActive ? "blue.700" : "gray.800"}
+                    fontWeight={isActive ? "800" : "600"}
+                    _hover={{ bg: "blue.50" }}
+                  >
+                    タスク
+                  </Box>
+                )}
+              </NavLink>
 
-            <NavLink to="/inventory" style={{ textDecoration: "none" }}>
-              {({ isActive }) => (
-                <Box
-                  fontSize="lg"
-                  px={3}
-                  py={2}
-                  borderRadius="lg"
-                  bg={isActive ? "blue.50" : "transparent"}
-                  color={isActive ? "blue.700" : "gray.800"}
-                  fontWeight={isActive ? "800" : "600"}
-                  _hover={{ bg: "blue.50" }}
-                >
-                  在庫管理
-                </Box>
-              )}
-            </NavLink>
+              <NavLink to="/inventory" style={{ textDecoration: "none" }}>
+                {({ isActive }) => (
+                  <Box
+                    fontSize="lg"
+                    px={3}
+                    py={2}
+                    borderRadius="lg"
+                    bg={isActive ? "blue.50" : "transparent"}
+                    color={isActive ? "blue.700" : "gray.800"}
+                    fontWeight={isActive ? "800" : "600"}
+                    _hover={{ bg: "blue.50" }}
+                  >
+                    在庫管理
+                  </Box>
+                )}
+              </NavLink>
 
-            <NavLink to="/requests" style={{ textDecoration: "none" }}>
-              {({ isActive }) => (
-                <Box
-                  fontSize="lg"
-                  px={3}
-                  py={2}
-                  borderRadius="lg"
-                  bg={isActive ? "blue.50" : "transparent"}
-                  color={isActive ? "blue.700" : "gray.800"}
-                  fontWeight={isActive ? "800" : "600"}
-                  _hover={{ bg: "blue.50" }}
-                >
-                  ミニ稟議
-                </Box>
-              )}
-            </NavLink>
+              <NavLink to="/profile" style={{ textDecoration: "none" }}>
+                {({ isActive }) => (
+                  <Box
+                    fontSize="lg"
+                    px={3}
+                    py={2}
+                    borderRadius="lg"
+                    bg={isActive ? "blue.50" : "transparent"}
+                    color={isActive ? "blue.700" : "gray.800"}
+                    fontWeight={isActive ? "800" : "600"}
+                    _hover={{ bg: "blue.50" }}
+                  >
+                    プロフィール
+                  </Box>
+                )}
+              </NavLink>
+            </Flex>
+          </Box>
+        )}
 
-            <NavLink to="/requests/new" style={{ textDecoration: "none" }}>
-              {({ isActive }) => (
-                <Box
-                  fontSize="lg"
-                  px={3}
-                  py={2}
-                  borderRadius="lg"
-                  bg={isActive ? "blue.50" : "transparent"}
-                  color={isActive ? "blue.700" : "gray.800"}
-                  fontWeight={isActive ? "800" : "600"}
-                  _hover={{ bg: "blue.50" }}
-                >
-                  ミニ稟議（作成）
-                </Box>
-              )}
-            </NavLink>
-
-            <NavLink to="/profile" style={{ textDecoration: "none" }}>
-              {({ isActive }) => (
-                <Box
-                  fontSize="lg"
-                  px={3}
-                  py={2}
-                  borderRadius="lg"
-                  bg={isActive ? "blue.50" : "transparent"}
-                  color={isActive ? "blue.700" : "gray.800"}
-                  fontWeight={isActive ? "800" : "600"}
-                  _hover={{ bg: "blue.50" }}
-                >
-                  プロフィール
-                </Box>
-              )}
-            </NavLink>
-          </Flex>
-        </Box>
-
-        {/* Main */}
+        {/* ===== Main ===== */}
         <Box flex="1" py={10} px={{ base: 4, md: 10 }}>
-          <Container maxW="container.lg">
+          <Container maxW={isAuthenticated ? "container.lg" : "container.md"}>
             <Box
               bg="white"
               borderWidth="1px"

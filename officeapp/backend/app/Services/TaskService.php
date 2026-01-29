@@ -3,13 +3,14 @@
 namespace App\Services;
 
 use App\Models\Task;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Builder;
 
 class TaskService
 {
-    public function getTasks(string $auth0UserId)
+    public function getTasks(string $auth0UserId): Builder
     {
-        return Task::where('auth0_user_id', $auth0UserId);
+        return Task::query()
+            ->where('auth0_user_id', $auth0UserId);
     }
 
     public function createTask(string $auth0UserId, array $data): Task
