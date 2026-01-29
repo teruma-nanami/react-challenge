@@ -115,12 +115,6 @@ function AttendanceView({
             ) : (
               <VStack align="start" spacing={1}>
                 {breaks.map((b, index) => {
-                  console.log(
-                    "BREAK RAW",
-                    b.break_start_at,
-                    typeof b.break_start_at,
-                  );
-
                   return (
                     <Text key={b.id} fontSize="sm">
                       {index + 1}. {formatTime(b.break_start_at)} 〜{" "}

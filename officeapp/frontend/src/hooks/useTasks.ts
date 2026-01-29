@@ -4,6 +4,7 @@ import { apiFetch } from "../lib/api";
 import type { ApiResponse } from "../types/api";
 import type { Task, TaskStatus } from "../types/task";
 import { unwrapList } from "../utils/response";
+import { useAuthReady } from "./useAuthReady";
 
 type AddTaskParams = {
   title: string;
@@ -17,6 +18,13 @@ export function useTasks(auth0UserId: string) {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const authReady = useAuthReady();
+
+  useEffect(() => {
+    if (!authReady) return;
+    fetchTasks();
+  }, [authReady]);
 
   const fetchTasks = async () => {
     try {

@@ -20,16 +20,17 @@ export async function apiFetch<T>(
   path: string,
   init?: RequestInit,
 ): Promise<T> {
+  if (!accessToken) {
+    throw new Error("Authentication token is missing");
+  }
+
   const url = path.startsWith("http") ? path : `${API_BASE_URL}${path}`;
 
   const res = await fetch(url, {
     ...init,
     headers: {
       Accept: "application/json",
-
-      // 🔑 ここが追加ポイント
-      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-
+      Authorization: `Bearer ${accessToken}`,
       ...(init?.headers ?? {}),
     },
   });

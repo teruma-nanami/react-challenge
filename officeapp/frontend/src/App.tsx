@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 
@@ -15,34 +15,45 @@ import { setAccessToken } from "./lib/api";
 
 function App() {
   const { isAuthenticated, isLoading, getAccessTokenSilently } = useAuth0();
+  const [authReady, setAuthReady] = useState(false);
 
-  /**
-   * Auth0ログイン状態に応じて
-   * API用 Bearer Token を自動セットする
-   */
   useEffect(() => {
     if (isLoading) return;
 
     if (!isAuthenticated) {
       setAccessToken(null);
+      setAuthReady(true);
       return;
     }
 
     getAccessTokenSilently()
       .then((token) => {
         setAccessToken(token);
+        setAuthReady(true);
       })
       .catch(() => {
         setAccessToken(null);
+        setAuthReady(true);
       });
   }, [isAuthenticated, isLoading, getAccessTokenSilently]);
 
-  if (isLoading) {
+  if (!authReady) {
     return null;
   }
 
   return (
     <Routes>
+      {/* ✅ ここが追加：/ に来たら状態に応じて振り分け */}
+      <Route
+        path="/"
+        element={
+          <Navigate
+            to={isAuthenticated ? "/attendance" : "/contacts"}
+            replace
+          />
+        }
+      />
+
       {/* ===== 外部公開（未ログイン可） ===== */}
       <Route
         path="/contacts"
@@ -121,8 +132,16 @@ function App() {
         </>
       )}
 
-      {/* ===== フォールバック ===== */}
-      <Route path="*" element={<Navigate to="/contacts" replace />} />
+      {/* ✅ フォールバックは常に用意（真っ白防止） */}
+      <Route
+        path="*"
+        element={
+          <Navigate
+            to={isAuthenticated ? "/attendance" : "/contacts"}
+            replace
+          />
+        }
+      />
     </Routes>
   );
 }
