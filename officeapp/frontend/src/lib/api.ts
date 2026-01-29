@@ -7,6 +7,15 @@ type ApiEnvelope<T> = {
   message: string;
 };
 
+/**
+ * 🔑 Bearer token を外から注入するための関数
+ */
+let accessToken: string | null = null;
+
+export function setAccessToken(token: string | null) {
+  accessToken = token;
+}
+
 export async function apiFetch<T>(
   path: string,
   init?: RequestInit,
@@ -17,11 +26,14 @@ export async function apiFetch<T>(
     ...init,
     headers: {
       Accept: "application/json",
+
+      // 🔑 ここが追加ポイント
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+
       ...(init?.headers ?? {}),
     },
   });
 
-  // 401/422などもJSONで返る想定。ダメならテキストで拾う
   const contentType = res.headers.get("content-type") ?? "";
   const isJson = contentType.includes("application/json");
 
@@ -36,24 +48,21 @@ export async function apiFetch<T>(
     throw new Error(message);
   }
 
-  // 204 No Content
   if (res.status === 204) {
     return undefined as unknown as T;
   }
 
   const json = (isJson ? await res.json() : null) as ApiEnvelope<T> | T | null;
 
-  // LaravelのApiController(ok/created)の形式なら unwrap
   if (json && typeof json === "object" && "data" in json) {
     return (json as ApiEnvelope<T>).data;
   }
 
-  // 形式が違う場合はそのまま返す
   return json as T;
 }
 
 /**
- * paginateのときに `data.data` が配列になる問題を統一的に扱う
+ * paginate の unwrap（既存のままでOK）
  */
 export type LaravelPaginator<T> = {
   current_page: number;
@@ -67,12 +76,10 @@ export function unwrapList<T>(payload: unknown): {
   items: T[];
   paginator?: LaravelPaginator<T>;
 } {
-  // 1) 配列ならそのまま
   if (Array.isArray(payload)) {
     return { items: payload as T[] };
   }
 
-  // 2) paginate形式なら payload.data が配列
   if (
     payload &&
     typeof payload === "object" &&
@@ -85,6 +92,5 @@ export function unwrapList<T>(payload: unknown): {
     };
   }
 
-  // 3) それ以外は空にして落とさない
   return { items: [] };
 }

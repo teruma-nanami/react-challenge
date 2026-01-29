@@ -20,9 +20,8 @@ class UserController extends ApiController
      */
     public function me(Request $request): JsonResponse
     {
-        $auth0UserId = $this->auth0UserId($request);
-
-        $user = $this->userService->findByAuth0UserId($auth0UserId);
+        // ApiController に集約済み
+        $user = $this->currentUser($request);
 
         return $this->ok($user);
     }
@@ -31,16 +30,16 @@ class UserController extends ApiController
      * PUT /api/profile
      * 自分のプロフィール更新
      */
-    public function update(
-        UpdateUserRequest $request
-    ): JsonResponse {
-        $auth0UserId = $this->auth0UserId($request);
+    public function update(UpdateUserRequest $request): JsonResponse
+    {
+        // ApiController に集約済み
+        $user = $this->currentUser($request);
 
-        $user = $this->userService->updateByAuth0UserId(
-            $auth0UserId,
+        $updated = $this->userService->update(
+            $user,
             $request->validated()
         );
 
-        return $this->ok($user);
+        return $this->ok($updated);
     }
 }

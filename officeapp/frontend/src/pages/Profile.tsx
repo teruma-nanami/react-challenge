@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useAuth0 } from "@auth0/auth0-react";
 import {
   Box,
   Button,
@@ -14,15 +13,9 @@ import {
 } from "@chakra-ui/react";
 
 import { apiFetch } from "../lib/api";
-import type { ApiResponse } from "../types/api";
 import type { User } from "../types/user";
 
 function Profile() {
-  const { user } = useAuth0();
-
-  // 🔧 Auth0未使用期間の暫定
-  const auth0UserId = user?.sub ?? "auth0|admin-user";
-
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,21 +23,17 @@ function Profile() {
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("");
-  console.log("auth0UserId", auth0UserId);
+
   const fetchProfile = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const res = await apiFetch<ApiResponse<User>>("/api/profile", {
-        headers: {
-          "X-Auth0-User-Id": auth0UserId,
-        },
-      });
+      const user = await apiFetch<User>("/api/profile");
 
-      setDisplayName(res.data.display_name ?? "");
-      setEmail(res.data.email);
-      setRole(res.data.role);
+      setDisplayName(user.display_name ?? "");
+      setEmail(user.email);
+      setRole(user.role);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unknown error");
     } finally {
@@ -61,11 +50,10 @@ function Profile() {
       setSubmitting(true);
       setError(null);
 
-      await apiFetch<ApiResponse<User>>("/api/profile", {
+      await apiFetch<User>("/api/profile", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          "X-Auth0-User-Id": auth0UserId,
         },
         body: JSON.stringify({
           display_name: displayName || null,
