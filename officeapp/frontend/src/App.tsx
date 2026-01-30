@@ -1,3 +1,4 @@
+// src/App.tsx
 import { useEffect, useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
@@ -11,30 +12,47 @@ import Inventory from "./pages/Inventory";
 import InventoryDetail from "./pages/InventoryDetail";
 import Profile from "./pages/Profile";
 import Layout from "./layouts/Layout";
-import { setAccessToken } from "./lib/api";
+import { apiFetch, setAccessToken } from "./lib/api";
 
 function App() {
   const { isAuthenticated, isLoading, getAccessTokenSilently } = useAuth0();
+
   const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
     if (isLoading) return;
 
+    // 未ログインならトークンを外して準備完了
     if (!isAuthenticated) {
       setAccessToken(null);
       setAuthReady(true);
       return;
     }
 
-    getAccessTokenSilently()
-      .then((token) => {
+    // ログイン済み：必ず
+    // 1) AccessToken取得
+    // 2) setAccessToken
+    // 3) /api/auth/create をPOST（User作成）
+    // の順で実行する
+    (async () => {
+      try {
+        setAuthReady(false);
+
+        const token = await getAccessTokenSilently();
         setAccessToken(token);
+
+        await apiFetch("/api/auth/create", {
+          method: "POST",
+        });
+
         setAuthReady(true);
-      })
-      .catch(() => {
-        setAccessToken(null);
+      } catch (e) {
+        // ここで setAccessToken(null) にすると、その後のAPIが全部401になりやすいので
+        // 「失敗しても画面は動かす」方針で、トークンは維持しておく（createだけ失敗してもUIは見せる）
+        console.error("Auth bootstrap failed:", e);
         setAuthReady(true);
-      });
+      }
+    })();
   }, [isAuthenticated, isLoading, getAccessTokenSilently]);
 
   if (!authReady) {
@@ -43,7 +61,6 @@ function App() {
 
   return (
     <Routes>
-      {/* ✅ ここが追加：/ に来たら状態に応じて振り分け */}
       <Route
         path="/"
         element={
@@ -54,7 +71,7 @@ function App() {
         }
       />
 
-      {/* ===== 外部公開（未ログイン可） ===== */}
+      {/* 外部公開 */}
       <Route
         path="/contacts"
         element={
@@ -64,7 +81,7 @@ function App() {
         }
       />
 
-      {/* ===== 社内（ログイン必須） ===== */}
+      {/* 社内（ログイン必須） */}
       {isAuthenticated && (
         <>
           <Route
@@ -132,7 +149,6 @@ function App() {
         </>
       )}
 
-      {/* ✅ フォールバックは常に用意（真っ白防止） */}
       <Route
         path="*"
         element={
