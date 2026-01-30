@@ -50,5 +50,6 @@ Route::post('/break-times/start', [BreakTimeController::class, 'start']);
 Route::put('/break-times/{id}/end', [BreakTimeController::class, 'end']);
 Route::get('/profile', [UserController::class, 'me']);
 Route::put('/profile', [UserController::class, 'update']);
+Route::post('/auth/create', [UserController::class, 'create']);
 
 // }
