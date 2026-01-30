@@ -14,9 +14,8 @@ class AuthService
 
     public function __construct()
     {
-        // まずは直書き（あとで config/services.php や env に逃がす）
-        $this->issuer   = 'https://dev-ir7ur0o4kc8jonw3.us.auth0.com/';
-        $this->audience = 'http://localhost:8080';
+        $this->issuer = rtrim((string) config('auth0.issuer'), '/') . '/';
+        $this->audience = (string) config('auth0.audience');
     }
 
     public function getBearerToken(Request $request): string
@@ -30,12 +29,8 @@ class AuthService
         return substr($authorization, 7);
     }
 
-    /**
-     * Access Token(JWT) を検証して decoded を返す
-     */
     public function verifyAccessToken(string $token): object
     {
-        // JWKS 取得
         $jwksJson = @file_get_contents($this->issuer . '.well-known/jwks.json');
         if ($jwksJson === false) {
             abort(401, 'Failed to fetch JWKS');
@@ -54,12 +49,10 @@ class AuthService
             abort(401, 'Invalid token');
         }
 
-        // iss 検証
         if (($decoded->iss ?? null) !== $this->issuer) {
             abort(401, 'Invalid token issuer');
         }
 
-        // aud 検証（string / array 両対応）
         $aud = $decoded->aud ?? null;
         if (is_array($aud)) {
             if (!in_array($this->audience, $aud, true)) {
@@ -71,7 +64,6 @@ class AuthService
             }
         }
 
-        // sub 必須
         if (empty($decoded->sub)) {
             abort(401, 'Invalid token subject');
         }
@@ -79,9 +71,6 @@ class AuthService
         return $decoded;
     }
 
-    /**
-     * Auth0 /userinfo から email/name を取る（Access Tokenにemailが入らない問題の対策）
-     */
     public function fetchUserInfo(string $accessToken): array
     {
         $res = Http::withHeaders([
