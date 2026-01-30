@@ -2,119 +2,92 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Firebase\JWT\JWT;
 use Firebase\JWT\JWK;
-use Illuminate\Support\Facades\Http;
 
 class AuthService
 {
-    public function issuer(): string
+    private string $issuer;
+    private string $audience;
+
+    public function __construct()
     {
-        $issuer = (string) config('auth0.issuer');
-        $issuer = rtrim($issuer, '/') . '/';
-        return $issuer;
+        // まずは直書き（あとで config/services.php や env に逃がす）
+        $this->issuer   = 'https://dev-ir7ur0o4kc8jonw3.us.auth0.com/';
+        $this->audience = 'http://localhost:8080';
     }
 
-    public function audience(): string
+    public function getBearerToken(Request $request): string
     {
-        return (string) config('auth0.audience');
-    }
+        $authorization = $request->header('Authorization');
 
-    /**
-     * Access Token を検証し、sub と userinfo を返す
-     *
-     * @return array{sub:string,userinfo:array,decoded:object}
-     */
-    public function authenticateAccessToken(string $accessToken): array
-    {
-        $decoded = $this->decodeAndVerify($accessToken);
-        $this->validateClaims($decoded);
-
-        $sub = (string) ($decoded->sub ?? '');
-        if ($sub === '') {
-            abort(401, 'Invalid token subject');
+        if (!$authorization || !str_starts_with($authorization, 'Bearer ')) {
+            abort(401, 'Authentication token is missing');
         }
 
-        $userinfo = $this->fetchUserInfo($accessToken);
-
-        return [
-            'sub' => $sub,
-            'userinfo' => $userinfo,
-            'decoded' => $decoded,
-        ];
+        return substr($authorization, 7);
     }
 
     /**
-     * JWKS から署名検証して decode
+     * Access Token(JWT) を検証して decoded を返す
      */
-    private function decodeAndVerify(string $jwt): object
+    public function verifyAccessToken(string $token): object
     {
-        $jwks = $this->fetchJwks();
+        // JWKS 取得
+        $jwksJson = @file_get_contents($this->issuer . '.well-known/jwks.json');
+        if ($jwksJson === false) {
+            abort(401, 'Failed to fetch JWKS');
+        }
 
+        $jwks = json_decode($jwksJson, true);
         if (!is_array($jwks) || !isset($jwks['keys']) || !is_array($jwks['keys'])) {
             abort(401, 'Invalid JWKS');
         }
 
         $keySet = JWK::parseKeySet($jwks);
 
-        return JWT::decode($jwt, $keySet);
-    }
+        try {
+            $decoded = JWT::decode($token, $keySet);
+        } catch (\Throwable $e) {
+            abort(401, 'Invalid token');
+        }
 
-    /**
-     * iss / aud を検証
-     */
-    private function validateClaims(object $decoded): void
-    {
-        $issuer = $this->issuer();
-        $audience = $this->audience();
-
-        if (($decoded->iss ?? null) !== $issuer) {
+        // iss 検証
+        if (($decoded->iss ?? null) !== $this->issuer) {
             abort(401, 'Invalid token issuer');
         }
 
+        // aud 検証（string / array 両対応）
         $aud = $decoded->aud ?? null;
-
         if (is_array($aud)) {
-            if (!in_array($audience, $aud, true)) {
+            if (!in_array($this->audience, $aud, true)) {
                 abort(401, 'Invalid token audience');
             }
         } else {
-            if ($aud !== $audience) {
+            if ($aud !== $this->audience) {
                 abort(401, 'Invalid token audience');
             }
         }
-    }
 
-    /**
-     * JWKS を取得
-     */
-    private function fetchJwks(): array
-    {
-        $url = $this->issuer() . '.well-known/jwks.json';
-
-        $res = Http::timeout(5)->get($url);
-
-        if (!$res->ok()) {
-            abort(401, 'Failed to fetch JWKS');
+        // sub 必須
+        if (empty($decoded->sub)) {
+            abort(401, 'Invalid token subject');
         }
 
-        $json = $res->json();
-        return is_array($json) ? $json : [];
+        return $decoded;
     }
 
     /**
-     * Auth0 /userinfo から email/name を取る（Access Token を使う）
+     * Auth0 /userinfo から email/name を取る（Access Tokenにemailが入らない問題の対策）
      */
-    private function fetchUserInfo(string $accessToken): array
+    public function fetchUserInfo(string $accessToken): array
     {
-        $url = $this->issuer() . 'userinfo';
-
-        $res = Http::timeout(5)
-            ->withHeaders([
-                'Authorization' => 'Bearer ' . $accessToken,
-                'Accept' => 'application/json',
-            ])
-            ->get($url);
+        $res = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $accessToken,
+            'Accept'        => 'application/json',
+        ])->get($this->issuer . 'userinfo');
 
         if (!$res->ok()) {
             abort(401, 'Failed to fetch userinfo');

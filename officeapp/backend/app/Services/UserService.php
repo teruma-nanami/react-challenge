@@ -7,19 +7,12 @@ use App\Models\User;
 class UserService
 {
     /**
-     * Auth0 userinfo(payload) から User を取得 or 作成
-     * ※ Request は受け取らない
+     * Auth0 userinfo から User を取得 or 作成
      */
-    public function findOrCreateFromAuth0Payload(string $auth0UserId, array $payload): User
+    public function findOrCreateFromAuth0UserInfo(string $auth0UserId, array $userInfo): User
     {
-        $email = $payload['email'] ?? null;
-
-        // name が無いケースもあるので fallback を用意
-        $name =
-            $payload['name'] ??
-            $payload['nickname'] ??
-            $payload['given_name'] ??
-            null;
+        $email = $userInfo['email'] ?? null;
+        $name  = $userInfo['name'] ?? null;
 
         if (!$email) {
             abort(401, 'Email not provided by token');
@@ -28,9 +21,9 @@ class UserService
         return User::firstOrCreate(
             ['auth0_user_id' => $auth0UserId],
             [
-                'email' => $email,
+                'email'        => $email,
                 'display_name' => $name,
-                // role は DB default(admin) を使用
+                // role は DB default(admin)
             ]
         );
     }
