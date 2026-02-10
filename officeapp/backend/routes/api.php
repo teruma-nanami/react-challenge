@@ -8,6 +8,11 @@ use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\BreakTimeController;
 use App\Http\Controllers\Api\UserController;
 
+// 追加
+use App\Http\Controllers\Api\DocumentController;
+use App\Http\Controllers\Api\DateRequestController;
+use App\Http\Controllers\Api\TimeRequestController;
+
 use Illuminate\Support\Facades\Route;
 
 // 公開：問い合わせ送信だけ
@@ -48,7 +53,26 @@ Route::middleware('auth0')->group(function () {
     );
     Route::post('/break-times/start', [BreakTimeController::class, 'start']);
     Route::put('/break-times/{id}/end', [BreakTimeController::class, 'end']);
+
     Route::get('/profile', [UserController::class, 'me']);
     Route::put('/profile', [UserController::class, 'update']);
     Route::post('/auth/create', [UserController::class, 'create']);
+
+    // documents（請求書/稟議書）
+    Route::get('/documents', [DocumentController::class, 'index']);
+    Route::post('/documents', [DocumentController::class, 'store']);
+    Route::get('/documents/{document}', [DocumentController::class, 'show']);
+    Route::put('/documents/{document}', [DocumentController::class, 'update']);
+    Route::post('/documents/{document}/submit', [DocumentController::class, 'submit']);
+    Route::get('/documents/{document}/pdf', [DocumentController::class, 'pdf']);
+
+    // date_requests（休日申請）
+    Route::get('/date-requests', [DateRequestController::class, 'index']);
+    Route::post('/date-requests', [DateRequestController::class, 'store']);
+    Route::get('/date-requests/{dateRequest}', [DateRequestController::class, 'show']);
+
+    // time_requests（時刻修正申請）
+    Route::get('/time-requests', [TimeRequestController::class, 'index']);
+    Route::get('/time-requests/{timeRequest}', [TimeRequestController::class, 'show']);
+    Route::post('/attendances/{attendance}/time-requests', [TimeRequestController::class, 'storeForAttendance']);
 });

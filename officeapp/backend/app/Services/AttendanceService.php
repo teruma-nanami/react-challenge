@@ -71,4 +71,42 @@ class AttendanceService
             ->where('work_date', $now->toDateString())
             ->first();
     }
+
+
+    /**
+     * 勤怠時刻の更新（修正申請の承認時に使用）
+     * - work_date と check_in/out の日付が一致していること
+     * - check_in_at < check_out_at
+     */
+    public function updateTimes(Attendance $attendance, $checkInAt, $checkOutAt): Attendance
+    {
+        $in  = Carbon::parse($checkInAt);
+        $out = Carbon::parse($checkOutAt);
+
+        if ($in->gte($out)) {
+            throw new InvalidArgumentException('check_in_at must be before check_out_at.');
+        }
+
+        $workDate = Carbon::parse($attendance->work_date)->toDateString();
+        if ($in->toDateString() !== $workDate || $out->toDateString() !== $workDate) {
+            throw new InvalidArgumentException('Requested times must be on the same work_date as the attendance.');
+        }
+
+        return DB::transaction(function () use ($attendance, $in, $out) {
+            $locked = Attendance::where('id', $attendance->id)
+                ->lockForUpdate()
+                ->first();
+
+            if (!$locked) {
+                throw new InvalidArgumentException('Attendance not found.');
+            }
+
+            $locked->update([
+                'check_in_at'  => $in,
+                'check_out_at' => $out,
+            ]);
+
+            return $locked;
+        });
+    }
 }
