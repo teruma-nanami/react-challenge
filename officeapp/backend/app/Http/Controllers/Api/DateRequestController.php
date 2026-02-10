@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use App\Models\DateRequest;
 use App\Services\DateRequestService;
 use Illuminate\Http\Request;
 
-class DateRequestController extends Controller
+class DateRequestController extends ApiController
 {
     private DateRequestService $dateRequestService;
 
@@ -22,9 +21,9 @@ class DateRequestController extends Controller
      */
     public function index(Request $request)
     {
-        $userId = (int) $request->user()->id;
+        $user = $this->currentUser($request);
 
-        $items = $this->dateRequestService->listMine($userId);
+        $items = $this->dateRequestService->listMine((int)$user->id);
 
         return response()->json($items);
     }
@@ -35,17 +34,17 @@ class DateRequestController extends Controller
      */
     public function store(Request $request)
     {
-        $userId = (int) $request->user()->id;
+        $user = $this->currentUser($request);
 
         $validated = $request->validate([
             'start_date' => ['required', 'date'],
             'end_date'   => ['required', 'date'],
-            'session'    => ['required', 'string'], // full/am/pm は Service で正規化
+            'session'    => ['required', 'string'],
             'reason'     => ['required', 'string'],
         ]);
 
         $item = $this->dateRequestService->create(
-            $userId,
+            (int)$user->id,
             $validated['start_date'],
             $validated['end_date'],
             $validated['session'],
@@ -61,9 +60,9 @@ class DateRequestController extends Controller
      */
     public function show(Request $request, DateRequest $dateRequest)
     {
-        $userId = (int) $request->user()->id;
+        $user = $this->currentUser($request);
 
-        if ((int)$dateRequest->user_id !== $userId) {
+        if ((int)$dateRequest->user_id !== (int)$user->id) {
             abort(403, 'Forbidden');
         }
 

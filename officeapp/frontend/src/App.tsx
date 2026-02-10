@@ -5,18 +5,22 @@ import { useAuth0 } from "@auth0/auth0-react";
 
 import Contacts from "./pages/Contacts";
 import AttendancePage from "./pages/Attendance";
+import AttendanceList from "./pages/AttendanceList";
 import ContactList from "./pages/ContactList";
 import ContactDetail from "./pages/ContactDetail";
 import Tasks from "./pages/Tasks";
 import Inventory from "./pages/Inventory";
 import InventoryDetail from "./pages/InventoryDetail";
 import Profile from "./pages/Profile";
+
+import DateRequest from "./pages/DateRequest";
+import Document from "./pages/Document";
+
 import Layout from "./layouts/Layout";
 import { apiFetch, setAccessToken } from "./lib/api";
 
 function App() {
   const { isAuthenticated, isLoading, getAccessTokenSilently } = useAuth0();
-
   const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
@@ -41,23 +45,17 @@ function App() {
         const token = await getAccessTokenSilently();
         setAccessToken(token);
 
-        await apiFetch("/api/auth/create", {
-          method: "POST",
-        });
+        await apiFetch("/api/auth/create", { method: "POST" });
 
         setAuthReady(true);
       } catch (e) {
-        // ここで setAccessToken(null) にすると、その後のAPIが全部401になりやすいので
-        // 「失敗しても画面は動かす」方針で、トークンは維持しておく（createだけ失敗してもUIは見せる）
         console.error("Auth bootstrap failed:", e);
         setAuthReady(true);
       }
     })();
   }, [isAuthenticated, isLoading, getAccessTokenSilently]);
 
-  if (!authReady) {
-    return null;
-  }
+  if (!authReady) return null;
 
   return (
     <Routes>
@@ -84,11 +82,22 @@ function App() {
       {/* 社内（ログイン必須） */}
       {isAuthenticated && (
         <>
+          {/* 勤怠管理（打刻など） */}
           <Route
             path="/attendance"
             element={
               <Layout>
                 <AttendancePage />
+              </Layout>
+            }
+          />
+
+          {/* 勤怠一覧（閲覧＋モーダルで時刻修正申請） */}
+          <Route
+            path="/attendance-list"
+            element={
+              <Layout>
+                <AttendanceList />
               </Layout>
             }
           />
@@ -134,6 +143,24 @@ function App() {
             element={
               <Layout>
                 <InventoryDetail />
+              </Layout>
+            }
+          />
+
+          <Route
+            path="/date-requests"
+            element={
+              <Layout>
+                <DateRequest />
+              </Layout>
+            }
+          />
+
+          <Route
+            path="/documents"
+            element={
+              <Layout>
+                <Document />
               </Layout>
             }
           />

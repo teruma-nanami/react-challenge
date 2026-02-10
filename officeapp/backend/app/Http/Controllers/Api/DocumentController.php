@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use App\Models\Document;
 use App\Services\DocumentService;
 use Illuminate\Http\Request;
 
-class DocumentController extends Controller
+class DocumentController extends ApiController
 {
     private DocumentService $documentService;
 
@@ -22,9 +21,8 @@ class DocumentController extends Controller
      */
     public function index(Request $request)
     {
-        $userId = (int) $request->user()->id;
-
-        $docs = $this->documentService->listMine($userId);
+        $user = $this->currentUser($request);
+        $docs = $this->documentService->listMine((int)$user->id);
 
         return response()->json($docs);
     }
@@ -35,7 +33,7 @@ class DocumentController extends Controller
      */
     public function store(Request $request)
     {
-        $userId = (int) $request->user()->id;
+        $user = $this->currentUser($request);
 
         $validated = $request->validate([
             'type'          => ['required', 'string'],
@@ -44,7 +42,7 @@ class DocumentController extends Controller
         ]);
 
         $doc = $this->documentService->createDraft(
-            $userId,
+            (int)$user->id,
             $validated['type'],
             $validated['title'],
             $validated['document_data']
@@ -59,11 +57,9 @@ class DocumentController extends Controller
      */
     public function show(Request $request, Document $document)
     {
-        $userId = (int) $request->user()->id;
+        $user = $this->currentUser($request);
 
-        // 所有チェックは Service 側と揃えるため、PDF生成と同じルールに寄せる
-        // show は submitted/draft どちらも見えてOK
-        if ((int)$document->user_id !== $userId) {
+        if ((int)$document->user_id !== (int)$user->id) {
             abort(403, 'Forbidden');
         }
 
@@ -76,7 +72,7 @@ class DocumentController extends Controller
      */
     public function update(Request $request, Document $document)
     {
-        $userId = (int) $request->user()->id;
+        $user = $this->currentUser($request);
 
         $validated = $request->validate([
             'type'          => ['sometimes', 'string'],
@@ -84,7 +80,7 @@ class DocumentController extends Controller
             'document_data' => ['sometimes', 'array'],
         ]);
 
-        $doc = $this->documentService->updateDraft($document, $userId, $validated);
+        $doc = $this->documentService->updateDraft($document, (int)$user->id, $validated);
 
         return response()->json($doc);
     }
@@ -95,9 +91,9 @@ class DocumentController extends Controller
      */
     public function submit(Request $request, Document $document)
     {
-        $userId = (int) $request->user()->id;
+        $user = $this->currentUser($request);
 
-        $doc = $this->documentService->submit($document, $userId);
+        $doc = $this->documentService->submit($document, (int)$user->id);
 
         return response()->json($doc);
     }
@@ -108,8 +104,8 @@ class DocumentController extends Controller
      */
     public function pdf(Request $request, Document $document)
     {
-        $userId = (int) $request->user()->id;
+        $user = $this->currentUser($request);
 
-        return $this->documentService->buildPdfDownloadResponse($document, $userId);
+        return $this->documentService->buildPdfDownloadResponse($document, (int)$user->id);
     }
 }
