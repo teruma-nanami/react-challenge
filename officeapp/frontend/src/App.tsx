@@ -5,7 +5,8 @@ import { useAuth0 } from "@auth0/auth0-react";
 
 import Contacts from "./pages/Contacts";
 import AttendancePage from "./pages/Attendance";
-import AttendanceList from "./pages/AttendanceList";
+import TimeRequestList from "./pages/TimeRequestList";
+import DateRequestList from "./pages/DateRequestList";
 import ContactList from "./pages/ContactList";
 import ContactDetail from "./pages/ContactDetail";
 import Tasks from "./pages/Tasks";
@@ -92,16 +93,6 @@ function App() {
             }
           />
 
-          {/* 勤怠一覧（閲覧＋モーダルで時刻修正申請） */}
-          <Route
-            path="/attendance-list"
-            element={
-              <Layout>
-                <AttendanceList />
-              </Layout>
-            }
-          />
-
           <Route
             path="/contacts/internal"
             element={
@@ -170,6 +161,22 @@ function App() {
             element={
               <Layout>
                 <Profile />
+              </Layout>
+            }
+          />
+          <Route
+            path="/requests/time"
+            element={
+              <Layout>
+                <TimeRequestList />
+              </Layout>
+            }
+          />
+          <Route
+            path="/requests/date"
+            element={
+              <Layout>
+                <DateRequestList />
               </Layout>
             }
           />
