@@ -10,23 +10,31 @@ use InvalidArgumentException;
 
 class BreakTimeService
 {
+    private const TZ_UTC = 'UTC';
+
     /**
      * 休憩開始
+     * - attendance は呼び出し側で確定済み（今日の勤怠など）
+     * - break_start_at はサーバで now を採用（UTC保存）
      */
-    public function startBreak(array $data): BreakTime
+    public function startBreak(Attendance $attendance, Carbon $now): BreakTime
     {
-        return DB::transaction(function () use ($data) {
-            $attendance = Attendance::lockForUpdate()->find($data['attendance_id']);
+        $nowUtc = $now->copy()->setTimezone(self::TZ_UTC);
 
-            if (!$attendance) {
+        return DB::transaction(function () use ($attendance, $nowUtc) {
+            $lockedAttendance = Attendance::where('id', $attendance->id)
+                ->lockForUpdate()
+                ->first();
+
+            if (!$lockedAttendance) {
                 throw new InvalidArgumentException('Attendance not found.');
             }
 
-            if ($attendance->check_out_at !== null) {
+            if ($lockedAttendance->check_out_at !== null) {
                 throw new InvalidArgumentException('Already checked out.');
             }
 
-            $existsActiveBreak = BreakTime::where('attendance_id', $attendance->id)
+            $existsActiveBreak = BreakTime::where('attendance_id', $lockedAttendance->id)
                 ->whereNull('break_end_at')
                 ->exists();
 
@@ -34,25 +42,27 @@ class BreakTimeService
                 throw new InvalidArgumentException('Break already started.');
             }
 
-            $breakStartAt = Carbon::parse($data['break_start_at']);
-
-            if ($breakStartAt->lt($attendance->check_in_at)) {
+            if ($nowUtc->lt(Carbon::parse($lockedAttendance->check_in_at))) {
                 throw new InvalidArgumentException('Break start is before check-in.');
             }
 
             return BreakTime::create([
-                'attendance_id'  => $attendance->id,
-                'break_start_at' => $breakStartAt,
+                'attendance_id'  => $lockedAttendance->id,
+                'break_start_at' => $nowUtc,
+                'break_end_at'   => null,
             ]);
         });
     }
 
     /**
      * 休憩終了
+     * - break_end_at はサーバで now を採用（UTC保存）
      */
-    public function endBreak(int $id, array $data): BreakTime
+    public function endBreak(int $id, Carbon $now): BreakTime
     {
-        return DB::transaction(function () use ($id, $data) {
+        $nowUtc = $now->copy()->setTimezone(self::TZ_UTC);
+
+        return DB::transaction(function () use ($id, $nowUtc) {
             $break = BreakTime::where('id', $id)
                 ->lockForUpdate()
                 ->first();
@@ -65,14 +75,12 @@ class BreakTimeService
                 throw new InvalidArgumentException('Break already ended.');
             }
 
-            $breakEndAt = Carbon::parse($data['break_end_at']);
-
-            if ($breakEndAt->lt($break->break_start_at)) {
+            if ($nowUtc->lt(Carbon::parse($break->break_start_at))) {
                 throw new InvalidArgumentException('Break end is before break start.');
             }
 
             $break->update([
-                'break_end_at' => $breakEndAt,
+                'break_end_at' => $nowUtc,
             ]);
 
             return $break;

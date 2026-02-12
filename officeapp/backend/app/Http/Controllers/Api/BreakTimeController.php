@@ -6,7 +6,9 @@ use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\BreakIndexRequest;
 use App\Http\Requests\BreakStartRequest;
 use App\Http\Requests\BreakEndRequest;
+use App\Models\Attendance;
 use App\Services\BreakTimeService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 
 class BreakTimeController extends ApiController
@@ -21,9 +23,18 @@ class BreakTimeController extends ApiController
      */
     public function start(BreakStartRequest $request): JsonResponse
     {
-        $breakTime = $this->breakTimeService->startBreak(
-            $request->validated()
-        );
+        $validated = $request->validated();
+
+        $attendanceId = (int)($validated['attendance_id'] ?? 0);
+        $attendance = Attendance::find($attendanceId);
+
+        if (!$attendance) {
+            abort(404, 'Attendance not found.');
+        }
+
+        $now = Carbon::parse((string)$validated['break_start_at']);
+
+        $breakTime = $this->breakTimeService->startBreak($attendance, $now);
 
         return $this->created($breakTime);
     }
@@ -34,10 +45,12 @@ class BreakTimeController extends ApiController
      */
     public function end(int $id, BreakEndRequest $request): JsonResponse
     {
-        $breakTime = $this->breakTimeService->endBreak(
-            $id,
-            $request->validated()
-        );
+        $validated = $request->validated();
+
+        // ★ 第2引数は Carbon が必須
+        $now = Carbon::parse((string)$validated['break_end_at']);
+
+        $breakTime = $this->breakTimeService->endBreak($id, $now);
 
         return $this->ok($breakTime);
     }

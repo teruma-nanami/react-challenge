@@ -2,68 +2,94 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Requests\AttendanceCheckInRequest;
-use App\Http\Requests\AttendanceCheckOutRequest;
-use App\Http\Requests\AttendanceTodayRequest;
+use App\Models\Attendance;
 use App\Services\AttendanceService;
-use Illuminate\Http\JsonResponse;
-use InvalidArgumentException;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class AttendanceController extends ApiController
 {
-    public function __construct(
-        private AttendanceService $attendanceService
-    ) {}
+    private AttendanceService $attendanceService;
+
+    public function __construct(AttendanceService $attendanceService)
+    {
+        $this->attendanceService = $attendanceService;
+    }
+
+    /**
+     * GET /api/attendances
+     * - staff: 自分の勤怠一覧
+     * - admin: 全員の勤怠一覧
+     * - クエリ無しなら最新30件
+     * - 任意で from/to (YYYY-MM-DD) を受けて絞り込み
+     */
+    public function index(Request $request)
+    {
+        $user = $this->currentUser($request);
+
+        $q = Attendance::query();
+
+        // staff は自分だけ。admin は全員。
+        if (($user->role ?? null) !== 'admin') {
+            $q->where('user_id', (int) $user->id);
+        }
+
+        $from = $request->query('from'); // YYYY-MM-DD
+        $to   = $request->query('to');   // YYYY-MM-DD
+
+        if ($from) {
+            $q->where('work_date', '>=', $from);
+        }
+        if ($to) {
+            $q->where('work_date', '<=', $to);
+        }
+
+        // デフォルトは最新30件
+        if (!$from && !$to) {
+            $q->orderByDesc('work_date')->orderByDesc('id')->limit(30);
+        } else {
+            $q->orderByDesc('work_date')->orderByDesc('id');
+        }
+
+        return response()->json($q->get());
+    }
 
     /**
      * POST /api/attendances/check-in
-     * 出勤打刻
      */
-    public function checkIn(AttendanceCheckInRequest $request): JsonResponse
+    public function checkIn(Request $request)
     {
-        try {
-            $attendance = $this->attendanceService->checkIn(
-                $request->userId(),
-                now()
-            );
+        $user = $this->currentUser($request);
 
-            return $this->created($attendance, 'checked in');
-        } catch (InvalidArgumentException $e) {
-            // 業務的に想定された失敗（2重打刻など）
-            return $this->badRequest($e->getMessage());
-        }
+        $now = Carbon::now();
+        $attendance = $this->attendanceService->checkIn((int)$user->id, $now);
+
+        return response()->json($attendance, 201);
     }
 
     /**
      * POST /api/attendances/check-out
-     * 退勤打刻
      */
-    public function checkOut(AttendanceCheckOutRequest $request): JsonResponse
+    public function checkOut(Request $request)
     {
-        try {
-            $attendance = $this->attendanceService->checkOut(
-                $request->userId(),
-                now()
-            );
+        $user = $this->currentUser($request);
 
-            return $this->ok($attendance, 'checked out');
-        } catch (InvalidArgumentException $e) {
-            return $this->badRequest($e->getMessage());
-        }
+        $now = Carbon::now();
+        $attendance = $this->attendanceService->checkOut((int)$user->id, $now);
+
+        return response()->json($attendance);
     }
 
     /**
      * GET /api/attendances/today
-     * 本日の勤怠取得
      */
-    public function today(AttendanceTodayRequest $request): JsonResponse
+    public function today(Request $request)
     {
-        $attendance = $this->attendanceService->getTodayAttendance(
-            $request->userId(),
-            Carbon::now()
-        );
+        $user = $this->currentUser($request);
 
-        return $this->ok($attendance);
+        $now = Carbon::now();
+        $attendance = $this->attendanceService->getTodayAttendance((int)$user->id, $now);
+
+        return response()->json($attendance);
     }
 }

@@ -1,70 +1,146 @@
 <?php
+// app/Services/AdminService.php
 
 namespace App\Services;
 
-use App\Models\Contact;
-use Illuminate\Support\Collection;
+use App\Models\DateRequest;
+use App\Models\TimeRequest;
+use App\Models\Attendance;
+use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 
 class AdminService
 {
+    public function __construct(
+        private AttendanceService $attendanceService
+    ) {}
+
     /**
-     * お問い合わせ一覧取得（検索/フィルタ対応）
+     * 休日申請：承認
      */
-    public function getContacts(?string $status, ?string $category, ?string $keyword): Collection
+    public function approveDateRequest(int $dateRequestId): DateRequest
     {
-        $query = Contact::query()->orderBy('created_at', 'desc');
+        return DB::transaction(function () use ($dateRequestId) {
+            $req = DateRequest::where('id', $dateRequestId)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        // ステータス絞り込み
-        if ($status) {
-            $query->where('status', $status);
-        }
+            if ($req->status !== 'pending') {
+                throw new InvalidArgumentException('Only pending requests can be approved.');
+            }
 
-        // カテゴリ絞り込み
-        if ($category) {
-            $query->where('category', $category);
-        }
+            $req->update([
+                'status' => 'approved',
+                // 却下理由は承認時に消す
+                'reject_reason' => null,
+            ]);
 
-        // キーワード検索（name/email/subject/message）
-        if ($keyword) {
-            $query->where(function ($q) use ($keyword) {
-                $q->where('name', 'like', "%{$keyword}%")
-                    ->orWhere('email', 'like', "%{$keyword}%")
-                    ->orWhere('subject', 'like', "%{$keyword}%")
-                    ->orWhere('message', 'like', "%{$keyword}%");
-            });
-        }
-
-        return $query->get();
+            return $req;
+        });
     }
 
     /**
-     * お問い合わせ詳細取得
+     * 休日申請：却下
      */
-    public function getContactById(int $id): Contact
+    public function rejectDateRequest(int $dateRequestId, string $rejectReason): DateRequest
     {
-        return Contact::findOrFail($id);
+        $rejectReason = trim($rejectReason);
+        if ($rejectReason === '') {
+            throw new InvalidArgumentException('reject_reason is required.');
+        }
+
+        return DB::transaction(function () use ($dateRequestId, $rejectReason) {
+            $req = DateRequest::where('id', $dateRequestId)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($req->status !== 'pending') {
+                throw new InvalidArgumentException('Only pending requests can be rejected.');
+            }
+
+            $req->update([
+                'status' => 'rejected',
+                'reject_reason' => $rejectReason,
+            ]);
+
+            return $req;
+        });
     }
 
     /**
-     * お問い合わせ更新（status/担当/メモ）
+     * 時刻修正申請：承認（勤怠の更新も同トランザクションでやる）
      */
-    public function updateContact(int $id, array $data): Contact
+    public function approveTimeRequest(int $timeRequestId): TimeRequest
     {
-        $contact = Contact::findOrFail($id);
+        return DB::transaction(function () use ($timeRequestId) {
+            $req = TimeRequest::where('id', $timeRequestId)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        $contact->update([
-            'status' => $data['status'] ?? $contact->status,
+            if ($req->status !== 'pending') {
+                throw new InvalidArgumentException('Only pending requests can be approved.');
+            }
 
-            // null を明示的に入れたいケースがあるので array_key_exists が大事
-            'assigned_user_id' => array_key_exists('assigned_user_id', $data)
-                ? $data['assigned_user_id']
-                : $contact->assigned_user_id,
+            $attendance = Attendance::where('id', $req->attendance_id)
+                ->lockForUpdate()
+                ->first();
 
-            'internal_note' => array_key_exists('internal_note', $data)
-                ? $data['internal_note']
-                : $contact->internal_note,
-        ]);
+            if (!$attendance) {
+                throw new InvalidArgumentException('Attendance not found.');
+            }
 
-        return $contact;
+            // requested_check_out_at が null のケースは「未退勤修正」なので許容
+            // AttendanceService側が out必須だと落ちるので、ここで分岐
+            if ($req->requested_check_out_at === null) {
+                // 出勤だけ更新（退勤は触らない）
+                $this->attendanceService->updateTimes(
+                    $attendance,
+                    $req->requested_check_in_at,
+                    // 退勤は現在値を維持
+                    $attendance->check_out_at
+                );
+            } else {
+                $this->attendanceService->updateTimes(
+                    $attendance,
+                    $req->requested_check_in_at,
+                    $req->requested_check_out_at
+                );
+            }
+
+            $req->update([
+                'status' => 'approved',
+                'reject_reason' => null,
+            ]);
+
+            return $req;
+        });
+    }
+
+    /**
+     * 時刻修正申請：却下
+     */
+    public function rejectTimeRequest(int $timeRequestId, string $rejectReason): TimeRequest
+    {
+        $rejectReason = trim($rejectReason);
+        if ($rejectReason === '') {
+            throw new InvalidArgumentException('reject_reason is required.');
+        }
+
+        return DB::transaction(function () use ($timeRequestId, $rejectReason) {
+            $req = TimeRequest::where('id', $timeRequestId)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($req->status !== 'pending') {
+                throw new InvalidArgumentException('Only pending requests can be rejected.');
+            }
+
+            $req->update([
+                'status' => 'rejected',
+                'reject_reason' => $rejectReason,
+            ]);
+
+            return $req;
+        });
     }
 }
