@@ -7,7 +7,6 @@ import {
   FormLabel,
   Heading,
   HStack,
-  Input,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -29,30 +28,32 @@ import {
 } from "@chakra-ui/react";
 import { apiFetch } from "../lib/api";
 import { formatJst } from "../utils/time";
-
-type DateRequest = {
-  id: number;
-  user_id: number;
-
-  start_date: string; // YYYY-MM-DD
-  end_date: string; // YYYY-MM-DD
-
-  reason: string;
-  status: string; // pending / approved / rejected
-  reject_reason: string | null;
-
-  created_at: string;
-  updated_at: string;
-};
+import type {
+  DateRequest,
+  DateRequestSession,
+  DateRequestStatus,
+} from "../types/dateRequest";
 
 type Profile = {
   id: number;
   role?: string; // admin / staff
 };
 
-function fmtDate(yyyyMMdd: string | null | undefined) {
-  if (!yyyyMMdd) return "—";
-  return yyyyMMdd.replaceAll("-", "/");
+/**
+ * APIがもし start_date/end_date を datetime で返しても表示崩れしないように
+ * "YYYY-MM-DD" だけに正規化して表示する
+ */
+function fmtDate(value: string | null | undefined) {
+  if (!value) return "—";
+
+  // "2026-02-11T00:00:00.000000Z" / "2026-02-11 00:00:00" / "2026-02-11"
+  const ymd = value.includes("T")
+    ? value.slice(0, 10)
+    : value.includes(" ")
+      ? value.split(" ")[0]
+      : value;
+
+  return ymd.replaceAll("-", "/");
 }
 
 function fmtDateTime(v: string | null | undefined) {
@@ -61,7 +62,7 @@ function fmtDateTime(v: string | null | undefined) {
   return formatJst(iso);
 }
 
-function toJaStatus(status: string) {
+function toJaStatus(status: DateRequestStatus | string) {
   switch (status) {
     case "pending":
       return "申請中";
@@ -72,6 +73,64 @@ function toJaStatus(status: string) {
     default:
       return status;
   }
+}
+
+function toJaSession(session: DateRequestSession | string | null | undefined) {
+  switch (session) {
+    case "full":
+      return "全日";
+    case "am":
+      return "午前";
+    case "pm":
+      return "午後";
+    default:
+      return session ?? "—";
+  }
+}
+
+/**
+ * バックエンドの返却が揺れても、フロントの型(DateRequest)に寄せて吸収する
+ * - rejected_reason が正
+ * - reject_reason で来た場合も rejected_reason に寄せる
+ * - session が無い場合は full 扱い（表示のための暫定）
+ */
+function normalizeDateRequest(raw: any): DateRequest | null {
+  if (!raw || typeof raw !== "object") return null;
+
+  const id = raw.id;
+  const user_id = raw.user_id;
+  const start_date = raw.start_date;
+  const end_date = raw.end_date;
+
+  if (typeof id !== "number") return null;
+  if (typeof user_id !== "number") return null;
+  if (typeof start_date !== "string") return null;
+  if (typeof end_date !== "string") return null;
+
+  const session = (raw.session ?? "full") as DateRequestSession;
+  const status = (raw.status ?? "pending") as DateRequestStatus;
+
+  const rejected_reason = (raw.rejected_reason ?? raw.reject_reason ?? null) as
+    | string
+    | null;
+
+  const reason = typeof raw.reason === "string" ? raw.reason : "";
+
+  const created_at = typeof raw.created_at === "string" ? raw.created_at : "";
+  const updated_at = typeof raw.updated_at === "string" ? raw.updated_at : "";
+
+  return {
+    id,
+    user_id,
+    start_date,
+    end_date,
+    session,
+    reason,
+    status,
+    rejected_reason,
+    created_at,
+    updated_at,
+  };
 }
 
 export default function DateRequestList() {
@@ -96,7 +155,6 @@ export default function DateRequestList() {
       const me = await apiFetch<Profile>("/api/profile", { method: "GET" });
       setProfile(me);
     } catch {
-      // プロフィール取得に失敗しても一覧表示は継続する
       setProfile(null);
     }
   };
@@ -104,10 +162,16 @@ export default function DateRequestList() {
   const fetchList = async () => {
     setLoading(true);
     try {
-      const data = await apiFetch<DateRequest[]>("/api/date-requests", {
+      const raw = await apiFetch<unknown>("/api/date-requests", {
         method: "GET",
       });
-      setItems(data);
+
+      const arr = Array.isArray(raw) ? raw : [];
+      const normalized = arr
+        .map((x) => normalizeDateRequest(x))
+        .filter((x): x is DateRequest => x !== null);
+
+      setItems(normalized);
     } catch (e) {
       console.error(e);
       toast({
@@ -122,7 +186,7 @@ export default function DateRequestList() {
 
   const openDetail = (r: DateRequest) => {
     setSelected(r);
-    setRejectReason(r.reject_reason ?? "");
+    setRejectReason(r.rejected_reason ?? "");
     setDetailOpen(true);
   };
 
@@ -162,7 +226,7 @@ export default function DateRequestList() {
     }
   };
 
-  // 却下（reject_reason 必須）
+  // 却下（rejected_reason 必須）
   const onReject = async () => {
     if (!selected) return;
 
@@ -180,7 +244,8 @@ export default function DateRequestList() {
     try {
       await apiFetch(`/api/admin/date-requests/${selected.id}/reject`, {
         method: "POST",
-        body: { reject_reason: rejectReason.trim() },
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rejected_reason: rejectReason.trim() }),
       });
 
       toast({ status: "success", title: "却下しました" });
@@ -234,6 +299,7 @@ export default function DateRequestList() {
             <Tr>
               <Th>申請日</Th>
               <Th>期間</Th>
+              <Th>区分</Th>
               <Th>ステータス</Th>
               <Th>理由</Th>
               <Th textAlign="right">詳細</Th>
@@ -247,6 +313,7 @@ export default function DateRequestList() {
                 <Td>
                   {fmtDate(r.start_date)} 〜 {fmtDate(r.end_date)}
                 </Td>
+                <Td>{toJaSession(r.session)}</Td>
                 <Td>{toJaStatus(r.status)}</Td>
                 <Td maxW="360px">
                   <Text noOfLines={2}>{r.reason}</Text>
@@ -261,7 +328,7 @@ export default function DateRequestList() {
 
             {items.length === 0 && !loading && (
               <Tr>
-                <Td colSpan={5}>
+                <Td colSpan={6}>
                   <Text color="gray.600" py={4}>
                     申請はまだありません。
                   </Text>
@@ -304,6 +371,13 @@ export default function DateRequestList() {
 
                 <Box>
                   <Text fontSize="sm" color="gray.600">
+                    区分
+                  </Text>
+                  <Text fontWeight="700">{toJaSession(selected.session)}</Text>
+                </Box>
+
+                <Box>
+                  <Text fontSize="sm" color="gray.600">
                     ステータス
                   </Text>
                   <Text fontWeight="700">{toJaStatus(selected.status)}</Text>
@@ -323,7 +397,7 @@ export default function DateRequestList() {
                     却下理由
                   </Text>
                   <Text whiteSpace="pre-wrap">
-                    {selected.reject_reason ?? "—"}
+                    {selected.rejected_reason ?? "—"}
                   </Text>
                 </Box>
 
@@ -346,7 +420,7 @@ export default function DateRequestList() {
                         />
                       </FormControl>
 
-                      <HStack mt={3} spacing={3}>
+                      <HStack mt={3} spacing={3} align="center">
                         <Button
                           colorScheme="green"
                           onClick={onApprove}

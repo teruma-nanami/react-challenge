@@ -13,6 +13,9 @@ use App\Http\Controllers\Api\TimeRequestController;
 use App\Http\Controllers\Api\DateRequestController;
 use App\Http\Controllers\Api\DocumentController;
 
+// ★ 追加（Admin）
+use App\Http\Controllers\Api\AdminController;
+
 use Illuminate\Support\Facades\Route;
 
 // 公開：問い合わせ送信だけ
@@ -71,12 +74,24 @@ Route::middleware('auth0')->group(function () {
     // Route::post('/date-requests', [DateRequestController::class, 'store']);
 
     // ★ 追加：書類（documents）
-    Route::get('/documents', [DocumentController::class, 'index']);               // 一覧
-    Route::post('/documents', [DocumentController::class, 'store']);             // 下書き作成
-    Route::get('/documents/{document}', [DocumentController::class, 'show']);    // 詳細
-    Route::put('/documents/{document}', [DocumentController::class, 'update']);  // 下書き更新
+    Route::get('/documents', [DocumentController::class, 'index']);                     // 一覧
+    Route::post('/documents', [DocumentController::class, 'store']);                   // 下書き作成
+    Route::get('/documents/{document}', [DocumentController::class, 'show']);          // 詳細
+    Route::put('/documents/{document}', [DocumentController::class, 'update']);        // 下書き更新
     Route::post('/documents/{document}/submit', [DocumentController::class, 'submit']); // 提出
-    Route::get('/documents/{document}/pdf', [DocumentController::class, 'pdf']);       // PDF
+    Route::get('/documents/{document}/pdf', [DocumentController::class, 'pdf']);        // PDF
+
+    // ===== Admin（承認/却下）=====
+    // ※ 権限チェックは AdminController 内で currentUser()->role === 'admin' を見て弾く（ApiControllerは触らない）
+    Route::prefix('admin')->group(function () {
+        // 休日申請
+        Route::post('/date-requests/{id}/approve', [AdminController::class, 'approveDateRequest']);
+        Route::post('/date-requests/{id}/reject', [AdminController::class, 'rejectDateRequest']);
+
+        // 時刻修正申請
+        Route::post('/time-requests/{id}/approve', [AdminController::class, 'approveTimeRequest']);
+        Route::post('/time-requests/{id}/reject', [AdminController::class, 'rejectTimeRequest']);
+    });
 
     Route::get('/profile', [UserController::class, 'me']);
     Route::put('/profile', [UserController::class, 'update']);

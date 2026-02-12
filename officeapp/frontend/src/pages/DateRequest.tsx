@@ -1,3 +1,4 @@
+// src/pages/DateRequest.tsx
 import { useEffect, useMemo, useState } from "react";
 import {
   Alert,
@@ -22,6 +23,16 @@ import type {
   DateRequestCreateInput,
   DateRequestSession,
 } from "../types/dateRequest";
+import { formatYmd, formatJst } from "../utils/time";
+
+function fmtDate(v: string | null | undefined) {
+  return formatYmd(v);
+}
+
+function fmtDateTime(v: string | null | undefined) {
+  // created_at / updated_at が "2026-02-11 00:30:29" みたいに来ても JST 表示に吸収
+  return formatJst(v ? (v.endsWith("Z") ? v : `${v}Z`) : v);
+}
 
 export default function DateRequest() {
   const [loading, setLoading] = useState(false);
@@ -39,8 +50,10 @@ export default function DateRequest() {
     setLoading(true);
     setError(null);
     try {
-      const res = await apiFetch("/api/date-requests");
-      setItems(res as DateRequest[]);
+      const res = await apiFetch<DateRequest[]>("/api/date-requests", {
+        method: "GET",
+      });
+      setItems(res);
     } catch (e: any) {
       setError(e?.message ?? "failed to load");
     } finally {
@@ -59,23 +72,23 @@ export default function DateRequest() {
 
     try {
       if (!reason.trim()) {
-        throw new Error("reason is required");
+        throw new Error("理由は必須です");
       }
 
       const payload: DateRequestCreateInput = {
         start_date: startDate,
         end_date: endDate,
         session,
-        reason,
+        reason: reason.trim(),
       };
 
-      const created = await apiFetch("/api/date-requests", {
+      const created = await apiFetch<DateRequest>("/api/date-requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      setItems((prev) => [created as DateRequest, ...prev]);
+      setItems((prev) => [created, ...prev]);
       setReason("");
     } catch (e: any) {
       setError(e?.message ?? "failed to create");
@@ -87,11 +100,15 @@ export default function DateRequest() {
   return (
     <Container maxW="container.md" py={6}>
       <VStack align="stretch" spacing={4}>
-        <Heading size="md">休日申請</Heading>
-
-        <HStack>
-          <Button onClick={load} isLoading={loading}>
-            Reload
+        <HStack justify="space-between" align="center">
+          <Heading size="md">休日申請</Heading>
+          <Button
+            onClick={load}
+            isLoading={loading}
+            variant="outline"
+            size="sm"
+          >
+            再読込
           </Button>
         </HStack>
 
@@ -108,7 +125,7 @@ export default function DateRequest() {
 
             <HStack align="flex-end" spacing={4} flexWrap="wrap">
               <FormControl>
-                <FormLabel>start_date</FormLabel>
+                <FormLabel>開始日</FormLabel>
                 <Input
                   type="date"
                   value={startDate}
@@ -117,7 +134,7 @@ export default function DateRequest() {
               </FormControl>
 
               <FormControl>
-                <FormLabel>end_date</FormLabel>
+                <FormLabel>終了日</FormLabel>
                 <Input
                   type="date"
                   value={endDate}
@@ -126,25 +143,26 @@ export default function DateRequest() {
               </FormControl>
 
               <FormControl>
-                <FormLabel>session</FormLabel>
+                <FormLabel>区分</FormLabel>
                 <Select
                   value={session}
                   onChange={(e) =>
                     setSession(e.target.value as DateRequestSession)
                   }
                 >
-                  <option value="full">full</option>
-                  <option value="am">am</option>
-                  <option value="pm">pm</option>
+                  <option value="full">全日</option>
+                  <option value="am">午前</option>
+                  <option value="pm">午後</option>
                 </Select>
               </FormControl>
             </HStack>
 
             <FormControl>
-              <FormLabel>reason</FormLabel>
+              <FormLabel>理由</FormLabel>
               <Textarea
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
+                placeholder="例：私用のため"
               />
             </FormControl>
 
@@ -162,25 +180,41 @@ export default function DateRequest() {
           </Text>
 
           {items.length === 0 ? (
-            <Text>No items</Text>
+            <Text color="gray.600">申請はまだありません。</Text>
           ) : (
             <VStack align="stretch" spacing={3}>
-              {items.map((r) => (
-                <Box key={r.id} borderWidth="1px" borderRadius="md" p={3}>
-                  <Text fontWeight="bold">
-                    #{r.id} [{r.status}] {r.start_date}〜{r.end_date} (
-                    {r.session})
-                  </Text>
-                  <Text whiteSpace="pre-wrap" mt={2}>
-                    {r.reason}
-                  </Text>
-                  {r.rejected_reason && (
-                    <Text color="red.500" mt={2}>
-                      rejected_reason: {r.rejected_reason}
+              {items.map((r) => {
+                const rejected =
+                  (r as any).reject_reason ??
+                  (r as any).rejected_reason ??
+                  null;
+
+                return (
+                  <Box key={r.id} borderWidth="1px" borderRadius="md" p={3}>
+                    <Text fontWeight="700">
+                      #{r.id} [{r.status}] {fmtDate(r.start_date)}〜
+                      {fmtDate(r.end_date)}（{r.session}）
                     </Text>
-                  )}
-                </Box>
-              ))}
+
+                    {/* created_at があるなら見せる（無ければ消えてOK） */}
+                    {"created_at" in (r as any) && (
+                      <Text fontSize="sm" color="gray.600" mt={1}>
+                        申請日：{fmtDateTime((r as any).created_at)}
+                      </Text>
+                    )}
+
+                    <Text whiteSpace="pre-wrap" mt={2}>
+                      {r.reason}
+                    </Text>
+
+                    {rejected && (
+                      <Text color="red.500" mt={2}>
+                        却下理由：{rejected}
+                      </Text>
+                    )}
+                  </Box>
+                );
+              })}
             </VStack>
           )}
         </Box>

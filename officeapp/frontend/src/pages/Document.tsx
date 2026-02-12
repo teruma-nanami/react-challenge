@@ -1,3 +1,6 @@
+// src/pages/Document.tsx（あなたの配置に合わせてパスは調整してOK）
+// ※ ファイル名は「Document.tsx」のまま
+
 import { useEffect, useMemo, useState } from "react";
 import {
   Box,
@@ -13,21 +16,72 @@ import {
   Textarea,
   VStack,
   useToast,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  ModalCloseButton,
+  Spinner,
 } from "@chakra-ui/react";
 import { apiFetch } from "../lib/api";
+import { formatJst, formatYmd } from "../utils/time";
+
+type DocType = "note" | "invoice" | "approval";
+type DocumentStatus = "draft" | "submitted";
 
 type DocumentRow = {
   id: number;
   user_id: number;
-  type: string;
+
+  type: DocType;
   title: string;
+  status: DocumentStatus; // ★内部で持つが、画面には表示しない
+
   document_data: any;
-  status?: string | null;
+  submitted_at: string | null;
+
   created_at: string;
   updated_at: string;
 };
 
-type DocType = "note" | "invoice" | "approval";
+function fmtDateTime(v: string | null | undefined) {
+  if (!v) return "—";
+  const iso = v.endsWith("Z") ? v : `${v}Z`;
+  return formatJst(iso);
+}
+
+function fmtDate(v: string | null | undefined) {
+  if (!v) return "—";
+  // dateが誤って "YYYY-MM-DDT00:00..." で来ても日付だけに正規化
+  const ymd = v.includes("T")
+    ? v.slice(0, 10)
+    : v.includes(" ")
+      ? v.split(" ")[0]
+      : v;
+  return formatYmd(ymd);
+}
+
+function fmtNumber(v: unknown) {
+  if (v === null || v === undefined) return "—";
+  const n = Number(v);
+  if (Number.isNaN(n)) return String(v);
+  return n.toLocaleString("ja-JP");
+}
+
+function toJaType(type: DocType) {
+  switch (type) {
+    case "note":
+      return "メモ";
+    case "invoice":
+      return "請求書";
+    case "approval":
+      return "稟議書";
+    default:
+      return type;
+  }
+}
 
 export default function Document() {
   const toast = useToast();
@@ -50,6 +104,12 @@ export default function Document() {
   // approval
   const [purpose, setPurpose] = useState("");
   const [approvalAmount, setApprovalAmount] = useState<string>("");
+
+  // ===== 詳細モーダル =====
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedDoc, setSelectedDoc] = useState<DocumentRow | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
 
   const resetForm = () => {
     setTitle("");
@@ -95,7 +155,7 @@ export default function Document() {
   };
 
   const buildPayload = () => {
-    // ★フォーム入力をdocument_data（JSON）にまとめる（ユーザーはJSONを見ない）
+    // ★ type は残す（あなたの元設計）
     if (type === "invoice") {
       return {
         type,
@@ -132,11 +192,53 @@ export default function Document() {
   };
 
   const fetchDocs = async () => {
-    // ★あなたの apiFetch は Response ではなく JSON を返す前提で使う
     const data = (await apiFetch("/api/documents", {
       method: "GET",
     })) as DocumentRow[];
-    setDocs(data);
+    setDocs(Array.isArray(data) ? data : []);
+  };
+
+  const fetchDocDetail = async (id: number) => {
+    setDetailLoading(true);
+    try {
+      const doc = (await apiFetch(`/api/documents/${id}`, {
+        method: "GET",
+      })) as DocumentRow;
+
+      setSelectedDoc(doc ?? null);
+    } catch (e) {
+      console.error(e);
+      toast({
+        status: "error",
+        title: "書類詳細の取得に失敗しました",
+        description: String(e),
+      });
+      setSelectedDoc(null);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  const openDetail = async (id: number) => {
+    setSelectedId(id);
+    setSelectedDoc(null);
+    setDetailOpen(true);
+    await fetchDocDetail(id);
+  };
+
+  const closeDetail = () => {
+    setDetailOpen(false);
+    setSelectedId(null);
+    setSelectedDoc(null);
+  };
+
+  // PDF は「ボタンだけ」用意（後で接続）
+  const onPdfClick = () => {
+    toast({
+      status: "info",
+      title: "PDFは準備中です",
+      description: "PDF APIの返却形式が固まったら接続します。",
+    });
   };
 
   useEffect(() => {
@@ -159,7 +261,6 @@ export default function Document() {
 
       const payload = buildPayload();
 
-      // ★bodyは stringify しない。apiFetch側に任せる（ヘッダ付与も含めて）
       await apiFetch("/api/documents", {
         method: "POST",
         body: payload as any,
@@ -328,26 +429,42 @@ export default function Document() {
                 <HStack justify="space-between" align="start">
                   <Box>
                     <Text fontWeight="700">{d.title}</Text>
+
                     <Text fontSize="sm" color="gray.600">
-                      type: {d.type} / id: {d.id}
+                      種別: {toJaType(d.type)} / id: {d.id}
                     </Text>
                   </Box>
-                  <Text fontSize="sm" color="gray.600">
-                    {d.created_at}
-                  </Text>
+
+                  <Box textAlign="right">
+                    <Text fontSize="sm" color="gray.600">
+                      作成: {fmtDateTime(d.created_at)}
+                    </Text>
+                    <Text fontSize="xs" color="gray.500">
+                      更新: {fmtDateTime(d.updated_at)}
+                    </Text>
+
+                    <HStack justify="flex-end" mt={2}>
+                      <Button size="sm" onClick={() => openDetail(d.id)}>
+                        詳細
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={onPdfClick}>
+                        PDF
+                      </Button>
+                    </HStack>
+                  </Box>
                 </HStack>
 
                 <Box mt={3}>
                   {d.type === "invoice" && (
                     <>
                       <Text fontSize="sm" color="gray.700">
-                        宛名：{d.document_data?.bill_to ?? "-"}
+                        宛名：{d.document_data?.bill_to ?? "—"}
                       </Text>
                       <Text fontSize="sm" color="gray.700">
-                        発行日：{d.document_data?.issue_date ?? "-"}
+                        発行日：{fmtDate(d.document_data?.issue_date)}
                       </Text>
                       <Text fontSize="sm" color="gray.700">
-                        金額：{d.document_data?.amount ?? "-"}
+                        金額：{fmtNumber(d.document_data?.amount)} 円
                       </Text>
                       {d.document_data?.note && (
                         <Text mt={2} whiteSpace="pre-wrap">
@@ -360,10 +477,10 @@ export default function Document() {
                   {d.type === "approval" && (
                     <>
                       <Text fontSize="sm" color="gray.700">
-                        発行日：{d.document_data?.issue_date ?? "-"}
+                        発行日：{fmtDate(d.document_data?.issue_date)}
                       </Text>
                       <Text fontSize="sm" color="gray.700">
-                        金額：{d.document_data?.amount ?? "-"}
+                        金額：{fmtNumber(d.document_data?.amount)} 円
                       </Text>
                       <Text mt={2} whiteSpace="pre-wrap">
                         {d.document_data?.purpose ?? ""}
@@ -380,7 +497,7 @@ export default function Document() {
                     <Text whiteSpace="pre-wrap">
                       {typeof d.document_data === "object" &&
                       d.document_data?.note
-                        ? d.document_data.note
+                        ? String(d.document_data.note)
                         : ""}
                     </Text>
                   )}
@@ -390,6 +507,160 @@ export default function Document() {
           </VStack>
         )}
       </Box>
+
+      {/* ===== 詳細モーダル（statusは表示しない） ===== */}
+      <Modal isOpen={detailOpen} onClose={closeDetail} size="lg">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>書類の詳細</ModalHeader>
+          <ModalCloseButton />
+
+          <ModalBody>
+            {detailLoading && (
+              <HStack spacing={2} color="gray.600" mb={3}>
+                <Spinner size="sm" />
+                <Text fontSize="sm">読み込み中...</Text>
+              </HStack>
+            )}
+
+            {!selectedId ? (
+              <Text>選択された書類がありません。</Text>
+            ) : !selectedDoc ? (
+              <Text color="gray.600">
+                詳細データがありません（取得失敗の可能性）。再度開き直してください。
+              </Text>
+            ) : (
+              <VStack align="stretch" spacing={4}>
+                <Box>
+                  <Text fontSize="sm" color="gray.600">
+                    タイトル
+                  </Text>
+                  <Text fontWeight="700">{selectedDoc.title}</Text>
+                </Box>
+
+                <HStack justify="space-between" align="start">
+                  <Box>
+                    <Text fontSize="sm" color="gray.600">
+                      種別 / ID
+                    </Text>
+                    <Text fontWeight="700">
+                      {toJaType(selectedDoc.type)} / #{selectedDoc.id}
+                    </Text>
+                  </Box>
+
+                  <Box textAlign="right">
+                    <Text fontSize="sm" color="gray.600">
+                      作成
+                    </Text>
+                    <Text>{fmtDateTime(selectedDoc.created_at)}</Text>
+                  </Box>
+                </HStack>
+
+                <HStack justify="space-between" align="start">
+                  <Box>
+                    <Text fontSize="sm" color="gray.600">
+                      更新
+                    </Text>
+                    <Text>{fmtDateTime(selectedDoc.updated_at)}</Text>
+                  </Box>
+
+                  <Box textAlign="right">
+                    <Button size="sm" variant="outline" onClick={onPdfClick}>
+                      PDF
+                    </Button>
+                  </Box>
+                </HStack>
+
+                <Divider />
+
+                {selectedDoc.type === "invoice" && (
+                  <Box>
+                    <Heading size="sm" mb={2}>
+                      請求書の内容
+                    </Heading>
+
+                    <Text fontSize="sm">
+                      宛名：{selectedDoc.document_data?.bill_to ?? "—"}
+                    </Text>
+                    <Text fontSize="sm">
+                      発行日：{fmtDate(selectedDoc.document_data?.issue_date)}
+                    </Text>
+                    <Text fontSize="sm">
+                      金額：{fmtNumber(selectedDoc.document_data?.amount)} 円
+                    </Text>
+
+                    {selectedDoc.document_data?.note && (
+                      <Box mt={3}>
+                        <Text fontSize="sm" color="gray.600" mb={1}>
+                          備考
+                        </Text>
+                        <Text whiteSpace="pre-wrap">
+                          {selectedDoc.document_data.note}
+                        </Text>
+                      </Box>
+                    )}
+                  </Box>
+                )}
+
+                {selectedDoc.type === "approval" && (
+                  <Box>
+                    <Heading size="sm" mb={2}>
+                      稟議書の内容
+                    </Heading>
+
+                    <Text fontSize="sm">
+                      発行日：{fmtDate(selectedDoc.document_data?.issue_date)}
+                    </Text>
+                    <Text fontSize="sm">
+                      金額：{fmtNumber(selectedDoc.document_data?.amount)} 円
+                    </Text>
+
+                    <Box mt={3}>
+                      <Text fontSize="sm" color="gray.600" mb={1}>
+                        用途（内容）
+                      </Text>
+                      <Text whiteSpace="pre-wrap">
+                        {selectedDoc.document_data?.purpose ?? ""}
+                      </Text>
+                    </Box>
+
+                    {selectedDoc.document_data?.note && (
+                      <Box mt={3}>
+                        <Text fontSize="sm" color="gray.600" mb={1}>
+                          備考
+                        </Text>
+                        <Text whiteSpace="pre-wrap">
+                          {selectedDoc.document_data.note}
+                        </Text>
+                      </Box>
+                    )}
+                  </Box>
+                )}
+
+                {selectedDoc.type === "note" && (
+                  <Box>
+                    <Heading size="sm" mb={2}>
+                      メモの内容
+                    </Heading>
+                    <Text whiteSpace="pre-wrap">
+                      {typeof selectedDoc.document_data === "object" &&
+                      selectedDoc.document_data?.note
+                        ? String(selectedDoc.document_data.note)
+                        : ""}
+                    </Text>
+                  </Box>
+                )}
+              </VStack>
+            )}
+          </ModalBody>
+
+          <ModalFooter>
+            <Button variant="ghost" onClick={closeDetail}>
+              閉じる
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </VStack>
   );
 }

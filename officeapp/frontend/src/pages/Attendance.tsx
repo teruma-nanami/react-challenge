@@ -1,3 +1,4 @@
+// src/pages/Attendance.tsx
 import { useEffect, useMemo, useState } from "react";
 import {
   Box,
@@ -35,19 +36,12 @@ import type { Attendance } from "../types/attendance";
 import type { BreakTime } from "../types/breakTime";
 
 import AttendanceView from "../components/attendance/AttendanceView";
-import { formatJst } from "../utils/time";
+import { formatJst, formatYmd } from "../utils/time";
 
 function formatTime(value: string | null | undefined): string {
   if (!value) return "—";
-
-  // BreakTime が "Z" 無しで来ても UTC として扱う
   const iso = value.endsWith("Z") ? value : `${value}Z`;
   return formatJst(iso);
-}
-
-function formatWorkDate(yyyyMMdd: string) {
-  if (!yyyyMMdd) return "—";
-  return yyyyMMdd.replaceAll("-", "/");
 }
 
 // datetime-local 用（ブラウザのローカル時間＝JST前提）
@@ -68,12 +62,11 @@ function isoToLocalInput(iso: string | null | undefined): string {
 
 // "YYYY-MM-DDTHH:mm"（ローカル） -> ISO(UTC) string
 function localInputToIso(localValue: string): string {
-  // new Date("YYYY-MM-DDTHH:mm") はローカルとして解釈される
   const d = new Date(localValue);
   return d.toISOString();
 }
 
-// ★ today API の戻りを「Attendance|null」に正規化
+// today API の戻りを「Attendance|null」に正規化
 function normalizeTodayAttendance(payload: unknown): Attendance | null {
   if (!payload) return null;
   if (Array.isArray(payload)) return null;
@@ -92,7 +85,7 @@ type TimeRequestPayload = {
   reason: string;
 };
 
-export default function AttendancePage() {
+export default function Attendance() {
   const toast = useToast();
 
   // ===== 当日（勤怠＋休憩） =====
@@ -137,7 +130,6 @@ export default function AttendancePage() {
       });
 
       const data = normalizeTodayAttendance(raw);
-
       setToday(data);
 
       if (data?.id) {
@@ -230,7 +222,15 @@ export default function AttendancePage() {
 
     setSubmitting(true);
     try {
-      await apiFetch("/api/break-times/start", { method: "POST" });
+      // BreakStartRequest の必須に合わせて送る（attendance_id / break_start_at）
+      await apiFetch("/api/break-times/start", {
+        method: "POST",
+        body: {
+          attendance_id: today.id,
+          break_start_at: new Date().toISOString(),
+        } as any,
+      });
+
       toast({ status: "success", title: "休憩を開始しました" });
       await fetchBreaks(today.id);
     } catch (e) {
@@ -251,9 +251,14 @@ export default function AttendancePage() {
 
     setSubmitting(true);
     try {
+      // BreakEndRequest の必須に合わせて送る（break_end_at）
       await apiFetch(`/api/break-times/${activeBreak.id}/end`, {
         method: "PUT",
+        body: {
+          break_end_at: new Date().toISOString(),
+        } as any,
       });
+
       toast({ status: "success", title: "休憩を終了しました" });
       await fetchBreaks(today.id);
     } catch (e) {
@@ -268,11 +273,9 @@ export default function AttendancePage() {
     }
   };
 
-  // ===== 一覧：詳細モーダルを開く =====
   const openDetail = (a: Attendance) => {
     setSelected(a);
 
-    // 申請フォーム初期値：現在値を入れておく（修正しやすい）
     setReqCheckIn(isoToLocalInput(a.check_in_at));
     setReqCheckOut(isoToLocalInput(a.check_out_at));
 
@@ -283,13 +286,14 @@ export default function AttendancePage() {
   const closeDetail = () => {
     setDetailOpen(false);
     setSelected(null);
+    setReqCheckIn("");
+    setReqCheckOut("");
+    setReqReason("");
   };
 
-  // ===== 時刻修正申請（申請＝TimeRequest作成） =====
   const submitTimeRequest = async () => {
     if (!selected?.id) return;
 
-    // 出勤は必須。退勤は任意（未退勤なら空でもOK）
     if (!reqCheckIn) {
       toast({ status: "error", title: "出勤時刻（修正後）は必須です" });
       return;
@@ -309,14 +313,11 @@ export default function AttendancePage() {
     try {
       await apiFetch(`/api/attendances/${selected.id}/time-requests`, {
         method: "POST",
-        body: payload,
+        body: payload as any,
       });
 
       toast({ status: "success", title: "時刻修正申請を送信しました" });
-
-      // 一覧を更新（必要なら）
       await fetchList();
-
       closeDetail();
     } catch (e) {
       console.error(e);
@@ -447,7 +448,7 @@ export default function AttendancePage() {
             <Tbody>
               {list.map((a) => (
                 <Tr key={a.id}>
-                  <Td fontWeight="700">{formatWorkDate(a.work_date)}</Td>
+                  <Td fontWeight="700">{formatYmd(a.work_date)}</Td>
                   <Td>{a.check_in_at ? formatTime(a.check_in_at) : "—"}</Td>
                   <Td>{a.check_out_at ? formatTime(a.check_out_at) : "—"}</Td>
                   <Td textAlign="right">
@@ -495,9 +496,7 @@ export default function AttendancePage() {
                   <Text fontSize="sm" color="gray.600">
                     日付
                   </Text>
-                  <Text fontWeight="700">
-                    {formatWorkDate(selected.work_date)}
-                  </Text>
+                  <Text fontWeight="700">{formatYmd(selected.work_date)}</Text>
                 </Box>
 
                 <Box>

@@ -1,12 +1,13 @@
 // src/types/document.ts
 
+export type DocumentType = "note" | "invoice" | "approval";
 export type DocumentStatus = "draft" | "submitted";
 
 export type Document = {
   id: number;
   user_id: number;
 
-  type: string;
+  type: DocumentType;
   title: string;
   status: DocumentStatus;
 
@@ -18,7 +19,7 @@ export type Document = {
 };
 
 export type DocumentCreateInput = {
-  type: string;
+  type: DocumentType;
   title: string;
   document_data: Record<string, unknown>;
 };

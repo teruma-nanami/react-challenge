@@ -1,10 +1,11 @@
-// components/tasks/TaskItem.tsx
+// src/components/tasks/TaskItem.tsx
 import { Box, HStack, Text } from "@chakra-ui/react";
 
 import type { Task, TaskStatus } from "../../types/task";
 import PrimaryButton from "../ui/PrimaryButton";
 import DangerButton from "../ui/DangerButton";
 import CautionButton from "../ui/CautionButton";
+import { formatYmd } from "../../utils/time";
 
 type Props = {
   task: Task;
@@ -27,7 +28,7 @@ function TaskItem({ task, onChangeStatus, onDelete }: Props) {
 
           {task.due_date && (
             <Text fontSize="sm" color="gray.500">
-              due: {task.due_date}
+              due: {formatYmd(task.due_date)}
             </Text>
           )}
         </Box>
