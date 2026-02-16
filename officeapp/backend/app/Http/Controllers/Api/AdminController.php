@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use InvalidArgumentException;
+use Symfony\Component\HttpFoundation\Response;
 
 class AdminController extends ApiController
 {
@@ -24,8 +25,37 @@ class AdminController extends ApiController
 
         // role: admin / staff を想定
         if (($user->role ?? null) !== 'admin') {
-            abort(403, 'Forbidden');
+            abort(Response::HTTP_FORBIDDEN, 'Forbidden');
         }
+    }
+
+    /**
+     * InvalidArgumentException を「409」と「422」に分ける。
+     * - 状態不整合（pending以外でapprove/reject）: 409
+     * - 入力不正（rejected_reason空など）: 422
+     *
+     * ※ abort() で止めるのではなく、ここで JsonResponse を返して
+     *   「全経路が戻り値を返す」状態にする。
+     */
+    private function invalidArgumentToResponse(InvalidArgumentException $e): JsonResponse
+    {
+        $msg = $e->getMessage();
+
+        if (str_contains($msg, 'Only pending requests can be')) {
+            return response()->json([
+                'message' => $msg,
+            ], Response::HTTP_CONFLICT);
+        }
+
+        if (str_contains($msg, 'rejected_reason is required')) {
+            return response()->json([
+                'message' => $msg,
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        return response()->json([
+            'message' => $msg,
+        ], Response::HTTP_UNPROCESSABLE_ENTITY);
     }
 
     /**
@@ -39,9 +69,9 @@ class AdminController extends ApiController
             $updated = $this->adminService->approveDateRequest($id);
             return $this->ok($updated, 'Approved');
         } catch (ModelNotFoundException $e) {
-            abort(404, 'Not found');
+            return response()->json(['message' => 'Not found'], Response::HTTP_NOT_FOUND);
         } catch (InvalidArgumentException $e) {
-            abort(422, $e->getMessage());
+            return $this->invalidArgumentToResponse($e);
         }
     }
 
@@ -53,16 +83,16 @@ class AdminController extends ApiController
         $this->ensureAdmin($request);
 
         $validated = $request->validate([
-            'reject_reason' => ['required', 'string'],
+            'rejected_reason' => ['required', 'string'],
         ]);
 
         try {
-            $updated = $this->adminService->rejectDateRequest($id, $validated['reject_reason']);
+            $updated = $this->adminService->rejectDateRequest($id, $validated['rejected_reason']);
             return $this->ok($updated, 'Rejected');
         } catch (ModelNotFoundException $e) {
-            abort(404, 'Not found');
+            return response()->json(['message' => 'Not found'], Response::HTTP_NOT_FOUND);
         } catch (InvalidArgumentException $e) {
-            abort(422, $e->getMessage());
+            return $this->invalidArgumentToResponse($e);
         }
     }
 
@@ -77,9 +107,9 @@ class AdminController extends ApiController
             $updated = $this->adminService->approveTimeRequest($id);
             return $this->ok($updated, 'Approved');
         } catch (ModelNotFoundException $e) {
-            abort(404, 'Not found');
+            return response()->json(['message' => 'Not found'], Response::HTTP_NOT_FOUND);
         } catch (InvalidArgumentException $e) {
-            abort(422, $e->getMessage());
+            return $this->invalidArgumentToResponse($e);
         }
     }
 
@@ -91,16 +121,16 @@ class AdminController extends ApiController
         $this->ensureAdmin($request);
 
         $validated = $request->validate([
-            'reject_reason' => ['required', 'string'],
+            'rejected_reason' => ['required', 'string'],
         ]);
 
         try {
-            $updated = $this->adminService->rejectTimeRequest($id, $validated['reject_reason']);
+            $updated = $this->adminService->rejectTimeRequest($id, $validated['rejected_reason']);
             return $this->ok($updated, 'Rejected');
         } catch (ModelNotFoundException $e) {
-            abort(404, 'Not found');
+            return response()->json(['message' => 'Not found'], Response::HTTP_NOT_FOUND);
         } catch (InvalidArgumentException $e) {
-            abort(422, $e->getMessage());
+            return $this->invalidArgumentToResponse($e);
         }
     }
 }

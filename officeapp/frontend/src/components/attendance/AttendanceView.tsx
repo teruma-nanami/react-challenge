@@ -1,12 +1,4 @@
-import {
-  Box,
-  Heading,
-  HStack,
-  Text,
-  VStack,
-  Divider,
-  Button,
-} from "@chakra-ui/react";
+import { Box, Heading, HStack, Text, VStack, Divider } from "@chakra-ui/react";
 
 import type { Attendance } from "../../types/attendance";
 import type { BreakTime } from "../../types/breakTime";
@@ -27,27 +19,9 @@ type Props = {
   onStartBreak: () => void;
   onEndBreak: () => void;
 
+  // time.ts 側で正規化される前提（Z補完等はここでしない）
   formatTime: (v: string | null | undefined) => string;
 };
-
-/**
- * BreakTime は UTC 文字列として返ってくる前提なので
- * 表示時に「UTCであること」を明示する
- */
-function formatBreakTime(
-  value: string | null | undefined,
-  formatTime: (v: string | null | undefined) => string,
-): string {
-  if (!value) return "—";
-
-  // すでに Z が付いているならそのまま
-  if (value.endsWith("Z")) {
-    return formatTime(value);
-  }
-
-  // Z が無い場合でも UTC として扱う
-  return formatTime(`${value}Z`);
-}
 
 function AttendanceView({
   attendance,
@@ -62,8 +36,6 @@ function AttendanceView({
 }: Props) {
   return (
     <Box>
-      <Heading mb={4}>勤怠管理</Heading>
-
       {!attendance ? (
         <PrimaryButton onClick={onCheckIn} isLoading={submitting}>
           出勤
@@ -86,13 +58,9 @@ function AttendanceView({
                   休憩開始
                 </CautionButton>
               ) : (
-                <Button
-                  colorScheme="orange"
-                  onClick={onEndBreak}
-                  isLoading={submitting}
-                >
+                <CautionButton onClick={onEndBreak} isLoading={submitting}>
                   休憩終了
-                </Button>
+                </CautionButton>
               )}
 
               <DangerButton onClick={onCheckOut} isLoading={submitting}>
@@ -114,14 +82,12 @@ function AttendanceView({
               </Text>
             ) : (
               <VStack align="start" spacing={1}>
-                {breaks.map((b, index) => {
-                  return (
-                    <Text key={b.id} fontSize="sm">
-                      {index + 1}. {formatTime(b.break_start_at)} 〜{" "}
-                      {b.break_end_at ? formatTime(b.break_end_at) : "休憩中"}
-                    </Text>
-                  );
-                })}
+                {breaks.map((b, index) => (
+                  <Text key={b.id} fontSize="sm">
+                    {index + 1}. {formatTime(b.break_start_at)} 〜{" "}
+                    {b.break_end_at ? formatTime(b.break_end_at) : "休憩中"}
+                  </Text>
+                ))}
               </VStack>
             )}
           </Box>
