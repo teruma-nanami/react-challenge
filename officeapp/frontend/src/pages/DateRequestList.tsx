@@ -1,6 +1,6 @@
 // src/pages/DateRequestList.tsx
 
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import {
   Box,
   Button,
@@ -16,36 +16,15 @@ import {
   Tr,
   useToast,
 } from "@chakra-ui/react";
-import { formatJst } from "../utils/time";
+
+import { useDateRequestList } from "../hooks/useDateRequestList";
+import DateRequestModal from "../components/daterequest/DateRequestModal";
+import DateRequestListRow from "../components/daterequest/DateRequestListRow";
 import type {
   DateRequestSession,
   DateRequestStatus,
 } from "../types/dateRequest";
-import { useDateRequestList } from "../hooks/useDateRequestList";
-import DataRequestModal from "../components/daterequest/DateRequestModal";
-import DataRequestListRow from "../components/daterequest/DateRequestListRow";
-
-/**
- * APIがもし start_date/end_date を datetime で返しても表示崩れしないように
- * "YYYY-MM-DD" だけに正規化して表示する
- */
-function fmtDate(value: string | null | undefined) {
-  if (!value) return "—";
-
-  const ymd = value.includes("T")
-    ? value.slice(0, 10)
-    : value.includes(" ")
-      ? value.split(" ")[0]
-      : value;
-
-  return ymd.replaceAll("-", "/");
-}
-
-function fmtDateTime(v: string | null | undefined) {
-  if (!v) return "—";
-  const iso = v.endsWith("Z") ? v : `${v}Z`;
-  return formatJst(iso);
-}
+import { formatJst, formatYmd } from "../utils/time";
 
 function toJaStatus(status: DateRequestStatus | string) {
   switch (status) {
@@ -76,6 +55,17 @@ function toJaSession(session: DateRequestSession | string | null | undefined) {
 export default function DateRequestList() {
   const toast = useToast();
 
+  const handleError = useCallback(
+    (title: string, error?: unknown) => {
+      toast({
+        status: "error",
+        title,
+        description: error ? String(error) : undefined,
+      });
+    },
+    [toast],
+  );
+
   const {
     // list
     items,
@@ -101,25 +91,20 @@ export default function DateRequestList() {
     approve,
     reject,
   } = useDateRequestList({
-    onError: (title, error) => {
-      toast({
-        status: "error",
-        title,
-        description: error ? String(error) : undefined,
-      });
-    },
+    onError: handleError,
   });
 
   useEffect(() => {
-    fetchProfile().catch(() => {});
-    fetchList().catch(() => {});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    void fetchProfile();
+    void fetchList();
+  }, [fetchProfile, fetchList]);
+
+  const handleReload = () => {
+    void fetchList();
+  };
 
   const onApprove = async () => {
     if (!selected) return;
-
-    // 成功toastの誤爆防止（権限/状態の最低限チェック）
     if (!isAdmin) {
       toast({ status: "error", title: "管理者のみ操作できます" });
       return;
@@ -136,7 +121,6 @@ export default function DateRequestList() {
 
   const onReject = async () => {
     if (!selected) return;
-
     if (!isAdmin) {
       toast({ status: "error", title: "管理者のみ操作できます" });
       return;
@@ -164,7 +148,7 @@ export default function DateRequestList() {
         <Button
           size="sm"
           variant="outline"
-          onClick={() => fetchList()}
+          onClick={handleReload}
           isLoading={loading}
         >
           再読込
@@ -193,12 +177,12 @@ export default function DateRequestList() {
 
           <Tbody>
             {items.map((r) => (
-              <DataRequestListRow
+              <DateRequestListRow
                 key={r.id}
                 item={r}
                 onOpenDetail={openDetail}
-                fmtDate={fmtDate}
-                fmtDateTime={fmtDateTime}
+                formatDate={formatYmd}
+                formatDateTime={formatJst}
                 toJaSession={toJaSession}
                 toJaStatus={toJaStatus}
               />
@@ -217,7 +201,7 @@ export default function DateRequestList() {
         </Table>
       </Box>
 
-      <DataRequestModal
+      <DateRequestModal
         isOpen={detailOpen}
         onClose={closeDetail}
         selected={selected}
@@ -227,8 +211,8 @@ export default function DateRequestList() {
         actionLoading={actionLoading}
         onApprove={onApprove}
         onReject={onReject}
-        fmtDate={fmtDate}
-        fmtDateTime={fmtDateTime}
+        formatDate={formatYmd}
+        formatDateTime={formatJst}
         toJaSession={toJaSession}
         toJaStatus={toJaStatus}
       />

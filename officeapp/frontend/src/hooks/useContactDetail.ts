@@ -1,19 +1,51 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { apiFetch } from "../lib/api";
 import { unwrapData } from "../utils/unwrap";
 import type { Contact, ContactCategory, ContactStatus } from "../types/contact";
 
 /**
  * unwrap 後の値が Contact として最低限成立しているか
+ * - 実務では最低限の必須項目を確認しておく（壊れたレスポンスを弾く）
  */
 function isValidContact(value: unknown): value is Contact {
   if (!value || typeof value !== "object") return false;
+  const c = value as Record<string, unknown>;
 
-  const c = value as Contact;
-  return typeof c.id === "number" && typeof c.status === "string";
+  const status = c.status;
+  const category = c.category;
+
+  return (
+    typeof c.id === "number" &&
+    typeof c.name === "string" &&
+    typeof c.email === "string" &&
+    typeof c.subject === "string" &&
+    typeof c.message === "string" &&
+    (status === "new" || status === "in_progress" || status === "closed") &&
+    (category === "bug" || category === "request" || category === "other")
+  );
+}
+
+function useIsMountedRef() {
+  const ref = useRef(true);
+  useEffect(() => {
+    ref.current = true;
+    return () => {
+      ref.current = false;
+    };
+  }, []);
+  return ref;
 }
 
 export function useContactDetail(id: string | undefined) {
+  const isMountedRef = useIsMountedRef();
+
+  const hasValidId = useMemo(() => {
+    if (!id) return false;
+    // ルートが数値ID前提ならこれで弾ける（前提が違うなら削除可）
+    const n = Number(id);
+    return Number.isFinite(n) && n > 0;
+  }, [id]);
+
   const [contact, setContact] = useState<Contact | null>(null);
 
   // ===== form state =====
@@ -26,62 +58,71 @@ export function useContactDetail(id: string | undefined) {
   const [internalNote, setInternalNote] = useState("");
 
   // ===== ui state =====
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const applyContactToForm = (c: Contact) => {
+  const applyContactToForm = useCallback((c: Contact) => {
     setName(c.name);
     setEmail(c.email);
     setSubject(c.subject);
-    setCategory(c.category as ContactCategory);
+    setCategory(c.category);
     setMessage(c.message);
-    setStatus(c.status as ContactStatus);
+    setStatus(c.status);
     setInternalNote(c.internal_note ?? "");
-  };
+  }, []);
 
-  const fetchContact = async () => {
-    if (!id) return;
+  const fetchContact = useCallback(async () => {
+    if (!hasValidId || !id) {
+      if (!isMountedRef.current) return;
+      setLoading(false);
+      setContact(null);
+      setError("不正なURLです（IDが取得できません）。");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
 
     try {
-      setLoading(true);
-      setError(null);
-
-      const res = await apiFetch<unknown>(`/api/contacts/${id}`);
+      const res = await apiFetch<unknown>(`/api/contacts/${id}`, {
+        method: "GET",
+      });
       const data = unwrapData<unknown>(res);
 
       if (!isValidContact(data)) {
         throw new Error("API response does not contain contact data.");
       }
 
+      if (!isMountedRef.current) return;
       setContact(data);
       applyContactToForm(data);
     } catch (err) {
+      if (!isMountedRef.current) return;
       setError(err instanceof Error ? err.message : "Unknown error");
       setContact(null);
     } finally {
+      if (!isMountedRef.current) return;
       setLoading(false);
     }
-  };
+  }, [applyContactToForm, hasValidId, id, isMountedRef]);
 
   useEffect(() => {
-    fetchContact();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+    void fetchContact();
+  }, [fetchContact]);
 
-  const updateContact = async () => {
-    if (!id) return;
+  const updateContact = useCallback(async () => {
+    if (!hasValidId || !id) return;
+
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
 
     try {
-      setSaving(true);
-      setError(null);
-      setSuccess(null);
-
       const res = await apiFetch<unknown>(`/api/contacts/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        body: {
           name,
           email,
           subject,
@@ -89,7 +130,7 @@ export function useContactDetail(id: string | undefined) {
           message,
           status,
           internal_note: internalNote,
-        }),
+        } as any,
       });
 
       const data = unwrapData<unknown>(res);
@@ -98,15 +139,35 @@ export function useContactDetail(id: string | undefined) {
         throw new Error("API response does not contain updated contact data.");
       }
 
+      if (!isMountedRef.current) return;
       setContact(data);
       applyContactToForm(data);
       setSuccess("更新しました");
+
+      // 成功メッセージは数秒で消す（実務でよくあるUX）
+      window.setTimeout(() => {
+        if (isMountedRef.current) setSuccess(null);
+      }, 2500);
     } catch (err) {
+      if (!isMountedRef.current) return;
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
+      if (!isMountedRef.current) return;
       setSaving(false);
     }
-  };
+  }, [
+    applyContactToForm,
+    category,
+    email,
+    hasValidId,
+    id,
+    internalNote,
+    isMountedRef,
+    message,
+    name,
+    status,
+    subject,
+  ]);
 
   return {
     contact,

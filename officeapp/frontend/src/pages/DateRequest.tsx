@@ -1,6 +1,5 @@
 // src/pages/DateRequest.tsx
-
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import {
   Button,
   Container,
@@ -17,23 +16,29 @@ import MyDateRequestList from "../components/daterequest/MyDateRequestList";
 export default function DateRequest() {
   const toast = useToast();
 
+  const handleError = useCallback(
+    (title: string, error?: unknown) => {
+      toast({
+        status: "error",
+        title,
+        description: error ? String(error) : undefined,
+      });
+    },
+    [toast],
+  );
+
   const { items, listLoading, fetchList, createLoading, create } =
     useDateRequest({
-      onError: (title, error) => {
-        toast({
-          status: "error",
-          title,
-          description: error ? String(error) : undefined,
-        });
-      },
+      onError: handleError,
     });
 
   useEffect(() => {
-    fetchList().catch(() => {
-      // toast は hook 側の onError で出る
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    void fetchList();
+  }, [fetchList]);
+
+  const handleReload = () => {
+    void fetchList();
+  };
 
   return (
     <Container maxW="container.md" py={6}>
@@ -42,7 +47,7 @@ export default function DateRequest() {
           <Heading size="md">休日申請</Heading>
 
           <Button
-            onClick={() => fetchList()}
+            onClick={handleReload}
             isLoading={listLoading}
             variant="outline"
             size="sm"

@@ -1,4 +1,4 @@
-// src/components/daterequest/DataRequestModal.tsx
+// src/components/daterequest/DateRequestModal.tsx
 
 import {
   Box,
@@ -20,11 +20,8 @@ import {
   VStack,
   useToast,
 } from "@chakra-ui/react";
-import type {
-  DateRequest,
-  DateRequestSession,
-  DateRequestStatus,
-} from "../../types/dateRequest";
+import type { DateRequest } from "../../types/dateRequest";
+import { formatJst, formatYmd } from "../../utils/time";
 
 type Props = {
   isOpen: boolean;
@@ -40,14 +37,21 @@ type Props = {
   actionLoading: boolean;
   onApprove: () => Promise<void>;
   onReject: () => Promise<void>;
-
-  fmtDate: (v: string | null | undefined) => string;
-  fmtDateTime: (v: string | null | undefined) => string;
-  toJaSession: (v: DateRequestSession | string | null | undefined) => string;
-  toJaStatus: (v: DateRequestStatus | string) => string;
 };
 
-export default function DataRequestModal({
+function toJaStatus(status: DateRequest["status"]) {
+  if (status === "approved") return "承認";
+  if (status === "rejected") return "却下";
+  return "申請中";
+}
+
+function toJaSession(session: DateRequest["session"]) {
+  if (session === "am") return "午前";
+  if (session === "pm") return "午後";
+  return "全日";
+}
+
+export default function DateRequestModal({
   isOpen,
   onClose,
   selected,
@@ -57,14 +61,11 @@ export default function DataRequestModal({
   actionLoading,
   onApprove,
   onReject,
-  fmtDate,
-  fmtDateTime,
-  toJaSession,
-  toJaStatus,
 }: Props) {
   const toast = useToast();
 
-  const canAction = !!selected && selected.status === "pending";
+  const canAction =
+    !!selected && selected.status === "pending" && !actionLoading;
   const rejectReasonOk = rejectReason.trim().length > 0;
 
   const handleReject = async () => {
@@ -108,7 +109,7 @@ export default function DataRequestModal({
                 <Text fontSize="sm" color="gray.600">
                   申請日
                 </Text>
-                <Text fontWeight="700">{fmtDateTime(selected.created_at)}</Text>
+                <Text fontWeight="700">{formatJst(selected.created_at)}</Text>
               </Box>
 
               <Box>
@@ -116,7 +117,8 @@ export default function DataRequestModal({
                   期間
                 </Text>
                 <Text fontWeight="700">
-                  {fmtDate(selected.start_date)} 〜 {fmtDate(selected.end_date)}
+                  {formatYmd(selected.start_date)} 〜{" "}
+                  {formatYmd(selected.end_date)}
                 </Text>
               </Box>
 
@@ -168,6 +170,7 @@ export default function DataRequestModal({
                         value={rejectReason}
                         onChange={(e) => onChangeRejectReason(e.target.value)}
                         placeholder="例：申請内容が不明確です。対象日を確認してください。"
+                        isDisabled={!canAction}
                       />
                     </FormControl>
 
@@ -191,7 +194,7 @@ export default function DataRequestModal({
                       </Button>
 
                       <Text fontSize="xs" color="gray.500">
-                        ※ pending のときだけ操作可能
+                        ※ 申請中（pending）のときだけ操作可能
                       </Text>
                     </HStack>
                   </Box>
@@ -206,7 +209,7 @@ export default function DataRequestModal({
         </ModalBody>
 
         <ModalFooter>
-          <Button variant="ghost" onClick={onClose}>
+          <Button variant="ghost" onClick={onClose} isDisabled={actionLoading}>
             閉じる
           </Button>
         </ModalFooter>

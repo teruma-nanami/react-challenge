@@ -1,37 +1,32 @@
-// src/components/daterequest/DataRequestListRow.tsx
+// src/components/daterequest/DateRequestListRow.tsx
 
 import { Button, Td, Text, Tr } from "@chakra-ui/react";
-import type {
-  DateRequest,
-  DateRequestSession,
-  DateRequestStatus,
-} from "../../types/dateRequest";
+import type { DateRequest } from "../../types/dateRequest";
+import { formatJst, formatYmd } from "../../utils/time";
 
 type Props = {
   item: DateRequest;
   onOpenDetail: (r: DateRequest) => void;
-
-  fmtDate: (v: string | null | undefined) => string;
-  fmtDateTime: (v: string | null | undefined) => string;
-  toJaStatus: (status: DateRequestStatus | string) => string;
-  toJaSession: (
-    session: DateRequestSession | string | null | undefined,
-  ) => string;
 };
 
-export default function DataRequestListRow({
-  item,
-  onOpenDetail,
-  fmtDate,
-  fmtDateTime,
-  toJaStatus,
-  toJaSession,
-}: Props) {
+function toJaStatus(status: DateRequest["status"]) {
+  if (status === "approved") return "承認";
+  if (status === "rejected") return "却下";
+  return "申請中";
+}
+
+function toJaSession(session: DateRequest["session"]) {
+  if (session === "am") return "午前";
+  if (session === "pm") return "午後";
+  return "全日";
+}
+
+export default function DateRequestListRow({ item, onOpenDetail }: Props) {
   return (
     <Tr>
-      <Td>{fmtDateTime(item.created_at)}</Td>
+      <Td>{formatJst(item.created_at)}</Td>
       <Td>
-        {fmtDate(item.start_date)} 〜 {fmtDate(item.end_date)}
+        {formatYmd(item.start_date)} 〜 {formatYmd(item.end_date)}
       </Td>
       <Td>{toJaSession(item.session)}</Td>
       <Td>{toJaStatus(item.status)}</Td>

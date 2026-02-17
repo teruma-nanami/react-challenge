@@ -17,11 +17,12 @@ import {
 import type {
   DateRequestCreateInput,
   DateRequestSession,
+  DateRequest,
 } from "../../types/dateRequest";
 
 type Props = {
   createLoading: boolean;
-  onCreate: (payload: DateRequestCreateInput) => Promise<unknown>;
+  onCreate: (payload: DateRequestCreateInput) => Promise<DateRequest>;
 };
 
 export default function DateRequestForm({ createLoading, onCreate }: Props) {
@@ -34,35 +35,53 @@ export default function DateRequestForm({ createLoading, onCreate }: Props) {
   const [session, setSession] = useState<DateRequestSession>("full");
   const [reason, setReason] = useState("");
 
-  const validate = (): string | null => {
-    if (!startDate) return "開始日を入力してください";
-    if (!endDate) return "終了日を入力してください";
+  const normalizeDatesBySession = (
+    s: DateRequestSession,
+    start: string,
+    end: string,
+  ) => {
+    if (s === "am" || s === "pm") {
+      return { start, end: start };
+    }
+    return { start, end };
+  };
+
+  const validate = (start: string, end: string): string | null => {
+    if (!start) return "開始日を入力してください";
+    if (!end) return "終了日を入力してください";
+    if (start > end) return "開始日は終了日以前にしてください";
     if (!reason.trim()) return "理由は必須です";
     return null;
   };
 
-  const buildPayload = (): DateRequestCreateInput => {
-    return {
-      start_date: startDate,
-      end_date: endDate,
-      session,
-      reason: reason.trim(),
-    };
-  };
-
   const onSubmit = async () => {
-    const err = validate();
+    const normalized = normalizeDatesBySession(session, startDate, endDate);
+    const err = validate(normalized.start, normalized.end);
     if (err) {
       toast({ status: "warning", title: err });
       return;
     }
 
+    const payload: DateRequestCreateInput = {
+      start_date: normalized.start,
+      end_date: normalized.end,
+      session,
+      reason: reason.trim(),
+    };
+
     try {
-      await onCreate(buildPayload());
+      await onCreate(payload);
       toast({ status: "success", title: "申請しました" });
       setReason("");
     } catch {
       // エラー表示は親（hook の onError / toast）側で出す想定なので握る
+    }
+  };
+
+  const onChangeSession = (next: DateRequestSession) => {
+    setSession(next);
+    if (next === "am" || next === "pm") {
+      setEndDate(startDate);
     }
   };
 
@@ -77,7 +96,13 @@ export default function DateRequestForm({ createLoading, onCreate }: Props) {
             <Input
               type="date"
               value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              onChange={(e) => {
+                const v = e.target.value;
+                setStartDate(v);
+                if (session === "am" || session === "pm") {
+                  setEndDate(v);
+                }
+              }}
             />
           </FormControl>
 
@@ -87,6 +112,7 @@ export default function DateRequestForm({ createLoading, onCreate }: Props) {
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
+              isDisabled={session === "am" || session === "pm"}
             />
           </FormControl>
 
@@ -94,7 +120,9 @@ export default function DateRequestForm({ createLoading, onCreate }: Props) {
             <FormLabel>区分</FormLabel>
             <Select
               value={session}
-              onChange={(e) => setSession(e.target.value as DateRequestSession)}
+              onChange={(e) =>
+                onChangeSession(e.target.value as DateRequestSession)
+              }
             >
               <option value="full">全日</option>
               <option value="am">午前</option>
@@ -112,7 +140,12 @@ export default function DateRequestForm({ createLoading, onCreate }: Props) {
           />
         </FormControl>
 
-        <Button colorScheme="blue" onClick={onSubmit} isLoading={createLoading}>
+        <Button
+          colorScheme="blue"
+          onClick={onSubmit}
+          isLoading={createLoading}
+          isDisabled={createLoading}
+        >
           申請する
         </Button>
       </VStack>
