@@ -31,8 +31,14 @@ type Props = {
   error: string | null;
   success: string | null;
 
-  onSubmit: () => void;
+  onSubmit: () => Promise<void>;
 };
+
+function labelCategory(v: ContactCategory): string {
+  if (v === "bug") return "不具合";
+  if (v === "request") return "要望";
+  return "その他";
+}
 
 function ContactDetailView({
   contact,
@@ -53,36 +59,17 @@ function ContactDetailView({
 }: Props) {
   const navigate = useNavigate();
 
-  if (loading) {
-    return (
-      <Box>
-        <Heading size="lg" mb={4}>
-          お問い合わせ詳細
-        </Heading>
-        <Spinner />
-      </Box>
-    );
-  }
-
-  if (!contact) {
-    return (
-      <Box>
-        <Heading size="lg" mb={4}>
-          お問い合わせ詳細
-        </Heading>
-        <Text>データが見つかりません</Text>
-      </Box>
-    );
-  }
-
   return (
     <Box maxW="700px">
       <HStack justify="space-between" mb={4}>
-        <Heading size="lg">お問い合わせ詳細（ID: {contact.id}）</Heading>
+        <Heading size="lg">
+          お問い合わせ詳細{contact ? `（ID: ${contact.id}）` : ""}
+        </Heading>
 
         <PrimaryButton
           variant="outline"
           onClick={() => navigate("/contacts/internal")}
+          isDisabled={saving}
         >
           一覧に戻る
         </PrimaryButton>
@@ -92,55 +79,86 @@ function ContactDetailView({
         {success && <Text color="green.500">{success}</Text>}
         {error && <Text color="red.500">{error}</Text>}
 
-        <FormField label="お名前" value={name} onChange={() => {}} />
+        {loading && (
+          <HStack>
+            <Spinner />
+            <Text>読み込み中...</Text>
+          </HStack>
+        )}
 
-        <FormField label="メール" value={email} onChange={() => {}} />
+        {!loading && !contact && (
+          <Text color="gray.600">データが見つかりません。</Text>
+        )}
 
-        <FormField label="件名" value={subject} onChange={() => {}} />
+        {!loading && contact && (
+          <>
+            {/* 変更不可（表示のみ） */}
+            <Box>
+              <Text fontSize="sm" color="gray.600">
+                お名前
+              </Text>
+              <Text>{name}</Text>
+            </Box>
 
-        <FormField
-          label="カテゴリ"
-          type="select"
-          value={category}
-          onChange={() => {}}
-        >
-          <option value="bug">不具合</option>
-          <option value="request">要望</option>
-          <option value="other">その他</option>
-        </FormField>
+            <Box>
+              <Text fontSize="sm" color="gray.600">
+                メール
+              </Text>
+              <Text>{email}</Text>
+            </Box>
 
-        <FormField
-          label="ステータス"
-          type="select"
-          value={status}
-          onChange={(v) => onChangeStatus(v as ContactStatus)}
-        >
-          <option value="new">new</option>
-          <option value="in_progress">in_progress</option>
-          <option value="closed">closed</option>
-        </FormField>
+            <Box>
+              <Text fontSize="sm" color="gray.600">
+                件名
+              </Text>
+              <Text>{subject}</Text>
+            </Box>
 
-        <FormField
-          label="管理メモ（内部用）"
-          type="textarea"
-          value={internalNote}
-          onChange={onChangeInternalNote}
-        />
+            <Box>
+              <Text fontSize="sm" color="gray.600">
+                カテゴリ
+              </Text>
+              <Text>{labelCategory(category)}</Text>
+            </Box>
 
-        <FormField
-          label="本文"
-          type="textarea"
-          value={message}
-          onChange={() => {}}
-        />
+            <Box>
+              <Text fontSize="sm" color="gray.600">
+                本文
+              </Text>
+              <Text whiteSpace="pre-wrap">{message}</Text>
+            </Box>
 
-        <PrimaryButton
-          onClick={onSubmit}
-          isLoading={saving}
-          loadingText="更新中"
-        >
-          更新
-        </PrimaryButton>
+            {/* 変更可 */}
+            <FormField
+              label="ステータス"
+              type="select"
+              value={status}
+              onChange={(v) => onChangeStatus(v as ContactStatus)}
+              isDisabled={saving}
+            >
+              <option value="new">new</option>
+              <option value="in_progress">in_progress</option>
+              <option value="closed">closed</option>
+            </FormField>
+
+            <FormField
+              label="管理メモ（内部用）"
+              type="textarea"
+              value={internalNote}
+              onChange={onChangeInternalNote}
+              isDisabled={saving}
+            />
+
+            <PrimaryButton
+              onClick={() => void onSubmit()}
+              isLoading={saving}
+              loadingText="更新中"
+              isDisabled={loading || !contact}
+            >
+              更新
+            </PrimaryButton>
+          </>
+        )}
       </VStack>
     </Box>
   );

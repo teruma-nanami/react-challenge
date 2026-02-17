@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import {
   FormControl,
   FormLabel,
@@ -6,7 +7,6 @@ import {
   Select,
   Textarea,
 } from "@chakra-ui/react";
-import type { ReactNode } from "react";
 
 export type FieldType = "input" | "select" | "textarea";
 
@@ -31,6 +31,9 @@ type Props = {
 
   placeholder?: string;
   children?: ReactNode; // select 用 option
+
+  isDisabled?: boolean;
+  isReadOnly?: boolean;
 };
 
 function FormField({
@@ -43,9 +46,15 @@ function FormField({
   onChange,
   placeholder,
   children,
+  isDisabled = false,
+  isReadOnly = false,
 }: Props) {
   return (
-    <FormControl isRequired={isRequired} isInvalid={!!error}>
+    <FormControl
+      isRequired={isRequired}
+      isInvalid={!!error}
+      isDisabled={isDisabled}
+    >
       <FormLabel>{label}</FormLabel>
 
       {type === "input" && (
@@ -54,6 +63,7 @@ function FormField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
+          isReadOnly={isReadOnly}
         />
       )}
 
@@ -62,11 +72,21 @@ function FormField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
+          isReadOnly={isReadOnly}
         />
       )}
 
       {type === "select" && (
-        <Select value={value} onChange={(e) => onChange(e.target.value)}>
+        <Select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          isReadOnly={isReadOnly}
+        >
+          {placeholder && (
+            <option value="" disabled>
+              {placeholder}
+            </option>
+          )}
           {children}
         </Select>
       )}

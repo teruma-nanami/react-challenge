@@ -1,54 +1,25 @@
-import { useEffect, useMemo, useState } from "react";
+// src/pages/TimeRequestList.tsx
+
+import { useEffect } from "react";
 import {
   Box,
   Button,
-  Divider,
-  FormControl,
-  FormLabel,
   Heading,
   HStack,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   Spinner,
   Table,
   Tbody,
   Td,
   Text,
-  Textarea,
   Th,
   Thead,
   Tr,
   useToast,
-  VStack,
 } from "@chakra-ui/react";
-import { apiFetch } from "../lib/api";
 import { formatJst } from "../utils/time";
-
-type TimeRequest = {
-  id: number;
-  user_id: number;
-  attendance_id: number;
-
-  requested_check_in_at: string;
-  requested_check_out_at: string | null;
-
-  reason: string;
-  status: string; // pending / approved / rejected など
-  reject_reason: string | null;
-
-  created_at: string;
-  updated_at: string;
-};
-
-type Profile = {
-  id: number;
-  role?: string; // admin / staff
-};
+import { useTimeRequestList } from "../hooks/useTimeRequestList";
+import TimeRequestModal from "../components/timerequest/TimeRequestModal";
+import TimeRequestListRow from "../components/timerequest/TimeRequestListRow";
 
 function fmt(v: string | null | undefined) {
   if (!v) return "—";
@@ -72,129 +43,40 @@ function toJaStatus(status: string) {
 export default function TimeRequestList() {
   const toast = useToast();
 
-  const [items, setItems] = useState<TimeRequest[]>([]);
-  const [loading, setLoading] = useState(false);
+  const {
+    items,
+    loading,
+    fetchList,
 
-  // 管理者判定（/api/profile を利用）
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const isAdmin = useMemo(() => profile?.role === "admin", [profile]);
+    isAdmin,
+    fetchProfile,
 
-  // 詳細モーダル
-  const [detailOpen, setDetailOpen] = useState(false);
-  const [selected, setSelected] = useState<TimeRequest | null>(null);
-  const [rejectReason, setRejectReason] = useState("");
+    detailOpen,
+    selected,
+    openDetail,
+    closeDetail,
 
-  const [actionLoading, setActionLoading] = useState(false);
+    rejectReason,
+    setRejectReason,
 
-  const fetchProfile = async () => {
-    try {
-      const me = await apiFetch<Profile>("/api/profile", { method: "GET" });
-      setProfile(me);
-    } catch {
-      setProfile(null);
-    }
-  };
-
-  const fetchList = async () => {
-    setLoading(true);
-    try {
-      const data = await apiFetch<TimeRequest[]>("/api/time-requests", {
-        method: "GET",
-      });
-      setItems(data);
-    } catch (e) {
-      console.error(e);
+    actionLoading,
+    approve,
+    reject,
+  } = useTimeRequestList({
+    onError: (title, error) => {
       toast({
         status: "error",
-        title: "時刻修正申請一覧の取得に失敗しました",
-        description: String(e),
+        title,
+        description: error ? String(error) : undefined,
       });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const openDetail = (r: TimeRequest) => {
-    setSelected(r);
-    setRejectReason(r.reject_reason ?? "");
-    setDetailOpen(true);
-  };
-
-  const closeDetail = () => {
-    setDetailOpen(false);
-    setSelected(null);
-    setRejectReason("");
-  };
-
-  // 承認（叩く先のAPIは後で作る想定）
-  const onApprove = async () => {
-    if (!selected) return;
-
-    if (!isAdmin) {
-      toast({ status: "error", title: "管理者のみ操作できます" });
-      return;
-    }
-
-    setActionLoading(true);
-    try {
-      await apiFetch(`/api/admin/time-requests/${selected.id}/approve`, {
-        method: "POST",
-      });
-
-      toast({ status: "success", title: "承認しました" });
-      await fetchList();
-      closeDetail();
-    } catch (e) {
-      console.error(e);
-      toast({
-        status: "error",
-        title: "承認に失敗しました",
-        description: String(e),
-      });
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  // 却下（reject_reason 必須）
-  const onReject = async () => {
-    if (!selected) return;
-
-    if (!isAdmin) {
-      toast({ status: "error", title: "管理者のみ操作できます" });
-      return;
-    }
-
-    if (!rejectReason.trim()) {
-      toast({ status: "error", title: "却下理由は必須です" });
-      return;
-    }
-
-    setActionLoading(true);
-    try {
-      await apiFetch(`/api/admin/time-requests/${selected.id}/reject`, {
-        method: "POST",
-        body: { reject_reason: rejectReason.trim() },
-      });
-
-      toast({ status: "success", title: "却下しました" });
-      await fetchList();
-      closeDetail();
-    } catch (e) {
-      console.error(e);
-      toast({
-        status: "error",
-        title: "却下に失敗しました",
-        description: String(e),
-      });
-    } finally {
-      setActionLoading(false);
-    }
-  };
+    },
+  });
 
   useEffect(() => {
     fetchProfile();
-    fetchList();
+    fetchList().catch(() => {
+      // toast は hook の onError 側で出る
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -203,16 +85,14 @@ export default function TimeRequestList() {
       <HStack justify="space-between" align="center" mb={4}>
         <Heading size="md">時刻修正申請一覧</Heading>
 
-        <HStack>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={fetchList}
-            isLoading={loading}
-          >
-            再読込
-          </Button>
-        </HStack>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => fetchList()}
+          isLoading={loading}
+        >
+          再読込
+        </Button>
       </HStack>
 
       {loading && (
@@ -238,25 +118,13 @@ export default function TimeRequestList() {
 
           <Tbody>
             {items.map((r) => (
-              <Tr key={r.id}>
-                <Td>{fmt(r.created_at)}</Td>
-                <Td>{r.attendance_id}</Td>
-                <Td>{fmt(r.requested_check_in_at)}</Td>
-                <Td>
-                  {r.requested_check_out_at
-                    ? fmt(r.requested_check_out_at)
-                    : "—"}
-                </Td>
-                <Td>{toJaStatus(r.status)}</Td>
-                <Td maxW="320px">
-                  <Text noOfLines={2}>{r.reason}</Text>
-                </Td>
-                <Td textAlign="right">
-                  <Button size="sm" onClick={() => openDetail(r)}>
-                    詳細
-                  </Button>
-                </Td>
-              </Tr>
+              <TimeRequestListRow
+                key={r.id}
+                item={r}
+                onOpenDetail={openDetail}
+                fmt={fmt}
+                toJaStatus={toJaStatus}
+              />
             ))}
 
             {items.length === 0 && !loading && (
@@ -272,140 +140,19 @@ export default function TimeRequestList() {
         </Table>
       </Box>
 
-      {/* ===== 詳細モーダル（管理者は承認/却下） ===== */}
-      <Modal isOpen={detailOpen} onClose={closeDetail} size="lg">
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>時刻修正申請の詳細</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            {!selected ? (
-              <Text>選択された申請がありません。</Text>
-            ) : (
-              <VStack align="stretch" spacing={4}>
-                <Box>
-                  <Text fontSize="sm" color="gray.600">
-                    申請日
-                  </Text>
-                  <Text fontWeight="700">{fmt(selected.created_at)}</Text>
-                </Box>
-
-                <Box>
-                  <Text fontSize="sm" color="gray.600">
-                    対象勤怠ID
-                  </Text>
-                  <Text fontWeight="700">{selected.attendance_id}</Text>
-                </Box>
-
-                <Box>
-                  <Text fontSize="sm" color="gray.600">
-                    ステータス
-                  </Text>
-                  <Text fontWeight="700">{toJaStatus(selected.status)}</Text>
-                </Box>
-
-                <Divider />
-
-                <Box>
-                  <Text fontSize="sm" color="gray.600">
-                    修正後 出勤
-                  </Text>
-                  <Text fontWeight="700">
-                    {fmt(selected.requested_check_in_at)}
-                  </Text>
-                </Box>
-
-                <Box>
-                  <Text fontSize="sm" color="gray.600">
-                    修正後 退勤
-                  </Text>
-                  <Text fontWeight="700">
-                    {selected.requested_check_out_at
-                      ? fmt(selected.requested_check_out_at)
-                      : "—"}
-                  </Text>
-                </Box>
-
-                <Divider />
-
-                <Box>
-                  <Text fontSize="sm" color="gray.600" mb={1}>
-                    理由
-                  </Text>
-                  <Text whiteSpace="pre-wrap">{selected.reason}</Text>
-                </Box>
-
-                <Box>
-                  <Text fontSize="sm" color="gray.600" mb={1}>
-                    却下理由
-                  </Text>
-                  <Text whiteSpace="pre-wrap">
-                    {selected.reject_reason ?? "—"}
-                  </Text>
-                </Box>
-
-                {isAdmin && (
-                  <>
-                    <Divider />
-                    <Box>
-                      <Heading size="sm" mb={2}>
-                        管理者操作
-                      </Heading>
-
-                      <FormControl>
-                        <FormLabel fontSize="sm">
-                          却下理由（却下時必須）
-                        </FormLabel>
-                        <Textarea
-                          value={rejectReason}
-                          onChange={(e) => setRejectReason(e.target.value)}
-                          placeholder="例：申請内容が不明確です。対象日時を確認してください。"
-                        />
-                      </FormControl>
-
-                      <HStack mt={3} spacing={3}>
-                        <Button
-                          colorScheme="green"
-                          onClick={onApprove}
-                          isLoading={actionLoading}
-                          isDisabled={selected.status !== "pending"}
-                        >
-                          承認
-                        </Button>
-
-                        <Button
-                          colorScheme="red"
-                          onClick={onReject}
-                          isLoading={actionLoading}
-                          isDisabled={selected.status !== "pending"}
-                        >
-                          却下
-                        </Button>
-
-                        <Text fontSize="xs" color="gray.500">
-                          ※ pending のときだけ操作可能
-                        </Text>
-                      </HStack>
-                    </Box>
-                  </>
-                )}
-
-                {!isAdmin && (
-                  <Text fontSize="sm" color="gray.500">
-                    ※ 管理者のみ承認/却下できます
-                  </Text>
-                )}
-              </VStack>
-            )}
-          </ModalBody>
-
-          <ModalFooter>
-            <Button variant="ghost" onClick={closeDetail}>
-              閉じる
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <TimeRequestModal
+        isOpen={detailOpen}
+        onClose={closeDetail}
+        selected={selected}
+        isAdmin={isAdmin}
+        rejectReason={rejectReason}
+        onChangeRejectReason={setRejectReason}
+        actionLoading={actionLoading}
+        onApprove={approve}
+        onReject={reject}
+        fmt={fmt}
+        toJaStatus={toJaStatus}
+      />
     </Box>
   );
 }

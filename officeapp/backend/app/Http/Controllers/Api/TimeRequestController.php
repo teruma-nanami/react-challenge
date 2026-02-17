@@ -2,12 +2,21 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Requests\TimeRequestStoreRequest;
 use App\Models\Attendance;
-use App\Models\TimeRequest;
+use App\Services\TimeRequestService;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class TimeRequestController extends ApiController
 {
+    private TimeRequestService $timeRequestService;
+
+    public function __construct(TimeRequestService $timeRequestService)
+    {
+        $this->timeRequestService = $timeRequestService;
+    }
+
     /**
      * GET /api/time-requests
      * 自分の時刻修正申請一覧
@@ -16,11 +25,7 @@ class TimeRequestController extends ApiController
     {
         $user = $this->currentUser($request);
 
-        $items = TimeRequest::query()
-            ->where('user_id', (int)$user->id)
-            ->orderByDesc('id')
-            ->limit(200)
-            ->get();
+        $items = $this->timeRequestService->listMine((int) $user->id);
 
         return response()->json($items);
     }
@@ -29,32 +34,32 @@ class TimeRequestController extends ApiController
      * POST /api/attendances/{attendanceId}/time-requests
      * 勤怠時刻の修正申請（申請＝レコード作成）
      */
-    public function store(Request $request, int $attendanceId)
+    public function store(TimeRequestStoreRequest $request, int $attendanceId)
     {
         $user = $this->currentUser($request);
+        $validated = $request->validated();
 
-        // 対象勤怠が「自分のもの」かチェック
+        // 存在確認
         $attendance = Attendance::query()->findOrFail($attendanceId);
-        if ((int)$attendance->user_id !== (int)$user->id) {
-            abort(403, 'You can only request edits for your own attendance');
+
+        // 所有者確認（Serviceの前提を満たす）
+        if ((int) $attendance->user_id !== (int) $user->id) {
+            abort(Response::HTTP_FORBIDDEN, 'You can only request edits for your own attendance');
         }
 
-        $validated = $request->validate([
-            'requested_check_in_at'  => ['required', 'date'],
-            'requested_check_out_at' => ['nullable', 'date'],
-            'reason'                 => ['required', 'string', 'max:1000'],
-        ]);
+        try {
+            $created = $this->timeRequestService->create(
+                (int) $user->id,
+                $attendance,
+                (string) $validated['requested_check_in_at'],
+                $validated['requested_check_out_at'] ?? null,
+                (string) $validated['reason']
+            );
 
-        $timeRequest = TimeRequest::create([
-            'user_id'                => (int)$user->id,
-            'attendance_id'          => (int)$attendance->id,
-            'requested_check_in_at'  => $validated['requested_check_in_at'],
-            'requested_check_out_at' => $validated['requested_check_out_at'] ?? null,
-            'reason'                 => $validated['reason'],
-            'status'                 => 'pending',
-            'reject_reason'          => null,
-        ]);
-
-        return response()->json($timeRequest, 201);
+            return response()->json($created, Response::HTTP_CREATED);
+        } catch (\RuntimeException $e) {
+            // Service側が投げるのは「同一attendanceにpendingが既にある」= 競合扱い
+            abort(Response::HTTP_CONFLICT, $e->getMessage());
+        }
     }
 }

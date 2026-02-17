@@ -3,10 +3,15 @@ import ContactListView from "../components/contact/ContactListView";
 import { useContactList } from "../hooks/useContactList";
 
 function ContactList() {
-  const { contacts, loading, error } = useContactList();
+  const { contacts, loading, error, fetchContacts } = useContactList();
 
   return (
-    <ContactListView contacts={contacts} loading={loading} error={error} />
+    <ContactListView
+      contacts={contacts}
+      loading={loading}
+      error={error}
+      onRetry={fetchContacts}
+    />
   );
 }
 

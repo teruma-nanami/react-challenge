@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Requests\DateRequestStoreRequest;
 use App\Models\DateRequest;
 use App\Services\DateRequestService;
 use Illuminate\Http\Request;
@@ -23,7 +24,7 @@ class DateRequestController extends ApiController
     {
         $user = $this->currentUser($request);
 
-        $items = $this->dateRequestService->listMine((int)$user->id);
+        $items = $this->dateRequestService->listMine((int) $user->id);
 
         return response()->json($items);
     }
@@ -32,23 +33,18 @@ class DateRequestController extends ApiController
      * POST /api/date-requests
      * staff: 休日申請作成（pending）
      */
-    public function store(Request $request)
+    public function store(DateRequestStoreRequest $request)
     {
         $user = $this->currentUser($request);
 
-        $validated = $request->validate([
-            'start_date' => ['required', 'date'],
-            'end_date'   => ['required', 'date'],
-            'session'    => ['required', 'string'],
-            'reason'     => ['required', 'string'],
-        ]);
+        $validated = $request->validated();
 
         $item = $this->dateRequestService->create(
-            (int)$user->id,
-            $validated['start_date'],
-            $validated['end_date'],
-            $validated['session'],
-            $validated['reason']
+            (int) $user->id,
+            (string) $validated['start_date'],
+            (string) $validated['end_date'],
+            (string) $validated['session'],
+            (string) $validated['reason']
         );
 
         return response()->json($item, 201);
@@ -62,7 +58,7 @@ class DateRequestController extends ApiController
     {
         $user = $this->currentUser($request);
 
-        if ((int)$dateRequest->user_id !== (int)$user->id) {
+        if ((int) $dateRequest->user_id !== (int) $user->id) {
             abort(403, 'Forbidden');
         }
 

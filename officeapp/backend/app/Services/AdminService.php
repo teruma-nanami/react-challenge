@@ -32,7 +32,7 @@ class AdminService
             $req->update([
                 'status' => 'approved',
                 // 却下理由は承認時に消す
-                'reject_reason' => null,
+                'rejected_reason' => null,
             ]);
 
             return $req;
@@ -42,14 +42,14 @@ class AdminService
     /**
      * 休日申請：却下
      */
-    public function rejectDateRequest(int $dateRequestId, string $rejectReason): DateRequest
+    public function rejectDateRequest(int $dateRequestId, string $rejectedReason): DateRequest
     {
-        $rejectReason = trim($rejectReason);
-        if ($rejectReason === '') {
-            throw new InvalidArgumentException('reject_reason is required.');
+        $rejectedReason = trim($rejectedReason);
+        if ($rejectedReason === '') {
+            throw new InvalidArgumentException('rejected_reason is required.');
         }
 
-        return DB::transaction(function () use ($dateRequestId, $rejectReason) {
+        return DB::transaction(function () use ($dateRequestId, $rejectedReason) {
             $req = DateRequest::where('id', $dateRequestId)
                 ->lockForUpdate()
                 ->firstOrFail();
@@ -60,7 +60,7 @@ class AdminService
 
             $req->update([
                 'status' => 'rejected',
-                'reject_reason' => $rejectReason,
+                'rejected_reason' => $rejectedReason,
             ]);
 
             return $req;
@@ -109,7 +109,7 @@ class AdminService
 
             $req->update([
                 'status' => 'approved',
-                'reject_reason' => null,
+                'rejected_reason' => null,
             ]);
 
             return $req;
@@ -119,14 +119,14 @@ class AdminService
     /**
      * 時刻修正申請：却下
      */
-    public function rejectTimeRequest(int $timeRequestId, string $rejectReason): TimeRequest
+    public function rejectTimeRequest(int $timeRequestId, string $rejectedReason): TimeRequest
     {
-        $rejectReason = trim($rejectReason);
-        if ($rejectReason === '') {
-            throw new InvalidArgumentException('reject_reason is required.');
+        $rejectedReason = trim($rejectedReason);
+        if ($rejectedReason === '') {
+            throw new InvalidArgumentException('rejected_reason is required.');
         }
 
-        return DB::transaction(function () use ($timeRequestId, $rejectReason) {
+        return DB::transaction(function () use ($timeRequestId, $rejectedReason) {
             $req = TimeRequest::where('id', $timeRequestId)
                 ->lockForUpdate()
                 ->firstOrFail();
@@ -137,7 +137,7 @@ class AdminService
 
             $req->update([
                 'status' => 'rejected',
-                'reject_reason' => $rejectReason,
+                'rejected_reason' => $rejectedReason,
             ]);
 
             return $req;

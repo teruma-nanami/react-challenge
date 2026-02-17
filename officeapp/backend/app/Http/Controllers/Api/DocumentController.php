@@ -22,7 +22,7 @@ class DocumentController extends ApiController
     public function index(Request $request)
     {
         $user = $this->currentUser($request);
-        $docs = $this->documentService->listMine((int)$user->id);
+        $docs = $this->documentService->listMine((int) $user->id);
 
         return response()->json($docs);
     }
@@ -30,6 +30,7 @@ class DocumentController extends ApiController
     /**
      * POST /api/documents
      * 下書き作成
+     * ※バリデーションは次フェーズでFormRequest化する前提でOK
      */
     public function store(Request $request)
     {
@@ -42,7 +43,7 @@ class DocumentController extends ApiController
         ]);
 
         $doc = $this->documentService->createDraft(
-            (int)$user->id,
+            (int) $user->id,
             $validated['type'],
             $validated['title'],
             $validated['document_data']
@@ -59,28 +60,7 @@ class DocumentController extends ApiController
     {
         $user = $this->currentUser($request);
 
-        if ((int)$document->user_id !== (int)$user->id) {
-            abort(403, 'Forbidden');
-        }
-
-        return response()->json($document);
-    }
-
-    /**
-     * PUT /api/documents/{document}
-     * 下書き更新（submittedは更新不可）
-     */
-    public function update(Request $request, Document $document)
-    {
-        $user = $this->currentUser($request);
-
-        $validated = $request->validate([
-            'type'          => ['sometimes', 'string'],
-            'title'         => ['sometimes', 'string'],
-            'document_data' => ['sometimes', 'array'],
-        ]);
-
-        $doc = $this->documentService->updateDraft($document, (int)$user->id, $validated);
+        $doc = $this->documentService->getMine($document, (int) $user->id);
 
         return response()->json($doc);
     }
@@ -93,7 +73,7 @@ class DocumentController extends ApiController
     {
         $user = $this->currentUser($request);
 
-        $doc = $this->documentService->submit($document, (int)$user->id);
+        $doc = $this->documentService->submit($document, (int) $user->id);
 
         return response()->json($doc);
     }
@@ -101,11 +81,16 @@ class DocumentController extends ApiController
     /**
      * GET /api/documents/{document}/pdf
      * PDFダウンロード（submittedのみ）
+     * ※PDFは後回し方針なので、現状は未実装でもOK
      */
     public function pdf(Request $request, Document $document)
     {
         $user = $this->currentUser($request);
 
-        return $this->documentService->buildPdfDownloadResponse($document, (int)$user->id);
+        // まだPDF実装しないなら、一旦 501 を返して明示するのが事故りにくい
+        abort(501, 'PDF is not implemented yet');
+
+        // PDFを実装する段階になったら、ここでServiceに委譲する
+        // return $this->documentService->buildPdfDownloadResponse($document, (int) $user->id);
     }
 }
